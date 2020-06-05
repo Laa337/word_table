@@ -208,7 +208,7 @@ public class ScandiDefinitionTableCreator extends AbstractBehavior<ScandiCrosswo
                  .onMessage(FindDefinitionLength.class,
                          msg -> {
                              int length = findDefinitionLength(helperTable, msg.currentPosition.x , msg.currentPosition.y , msg.direction);
-                             if(length == 0 || length >9) {
+                             if(length == 0 || length >7) {
                                  getContext().getSelf().tell(new FillPositionsListResponse(positions));
                                  return Behaviors.same();
                              }
@@ -635,7 +635,7 @@ public class ScandiDefinitionTableCreator extends AbstractBehavior<ScandiCrosswo
                 for (int i = 0; i < size * 2; i++)
                     lengths.add(size);
             }
-            if(size>9)
+            if(size>7)
                 break;
             size++;
         }
