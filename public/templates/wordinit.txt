@@ -1,0 +1,996 @@
+(function() {
+	 	console.log('Fut');
+	 	let imageIcons = {};
+	 	let layer = null;
+ 		let stage = null;
+ 		backGroundImage = null;
+	 	let LoadAssets = {
+ 			init : function() {
+ 				this.loadImages();
+ 			},
+
+	 		loadImages : function() {
+	 			let imgCounter = 0;
+	 			let imageSrcs = ['images/word_background.jpg'];
+	 			let imagesId =['word_background'];
+	 			let images = [];
+
+	 			images[0] = document.createElement('img');
+	 			for(let i=0; i< images.length;i++) {
+	 				images[i].setAttribute('class','hidden');
+	 				images[i].setAttribute('id',imagesId[i]);
+	 				images[i].onload = function() {
+	 					console.log('Image'+i+' downloaded');
+	 					document.getElementById('canvas_content').appendChild(images[i]);
+	 					imageIcons[imagesId[i]] = images[i];
+	 					if(++imgCounter == 1) {
+	 						Controller([Setup.init(), Setup.initHandlers()]);
+	 					}
+	 				}
+	 				images[i].src = imageSrcs[i];
+	 			}
+
+	 		}
+	 	}
+	 	let Controller = (funcs) => {
+
+        }
+        let Setup = {
+        	 		meCreateText : null,
+        	 		serverCreateText : null,
+        	 		init : function() {
+        	 			console.log('init fut');
+        	 			stage = new Konva.Stage({
+        					container: 'canvas_content',
+        			        width: window.innerWidth *0.8,
+        			        height: window.innerHeight *1.2
+        			    })
+        	 			layer = new Konva.Layer();
+        	 			backGroundImage  = new Konva.Image({
+        			        x:  0,
+        			        y:  0,
+        			        image : imageIcons['word_background'],
+        				    width : stage.width(),
+        					height: stage.height() *1
+        			    })
+        	 			this.meCreateText = new Konva.Text({
+        			        x: 0,
+        			        y:  0,
+        			        id : 'meCreate',
+        			        text: 'I will create one!',
+        			        fontSize: 24 ,
+        			        fontFamily: 'Calibri' ,
+        			        fill: 'black'
+        			   });
+        	 		   this.serverCreateText = new Konva.Text({
+        			        x: this.meCreateText.width()+ this.meCreateText.width()/3,
+        			        y:  0,
+        			        text: 'Let server create one!',
+        			        fontSize: 24 ,
+        			        fontFamily: 'Calibri' ,
+        			        fill: 'black'
+        			   });
+        	 		   console.log('Text width: ' + this.meCreateText.width())
+        	 			layer.add(backGroundImage);
+        	 			layer.add(this.meCreateText);
+        	 			layer.add(this.serverCreateText);
+        	 			stage.add(layer);
+        	 			layer.draw();
+
+        	 		},
+        	 		initHandlers : function(e) {
+        	 			this.serverCreateText.on('click',(e) => Controller(
+        	 				 [this.disableHandlers(),ReadParams.init(e,'Submit'), ReadParams.setupHandlers() ])  );
+        	 			this.meCreateText.on('click',(e) => Controller(
+        	 			 	 [this.disableHandlers(),ReadParams.init(e,'Create'), ReadParams.setupHandlers() ])  );
+        	 		},
+        	 		disableHandlers : function() {
+        	 			this.serverCreateText.off('click');
+        	 			this.serverCreateText.remove();
+        	 			this.meCreateText.off('click');
+        	 			this.meCreateText.remove();
+        	 		}
+        }
+         let Parameters = {
+         	   	   tableParams :  {
+         	   		   name : '',
+         	   		   topic : '',
+         	   		   timeLimit : 0,
+         	   		   rows : 0,
+         	 		   columns : 0,
+         	 		   score : 0,
+         	 		   letters : [],
+         	 		   words : []
+         	   	   },
+         	   	   word :  {
+         	   		   word : '',
+         	   		   x : 0,
+         	   		   y : 0,
+         	   		   direction : '',
+         	   		   reverse : false
+         	   	   },
+         	   	   others :  {
+         	   		  goal : '',
+         	   		  creationMode : ''
+
+         	   	   },
+         	   	   assesment : {
+         	   		   id : '',
+         	   	   	   groupId : '',
+         	   	   	   dueDate : null
+         	   	   }
+         	 	}
+         	 	let ReadParams = {
+                	 funTable : null,
+                	 assesmentTable : null,
+                	 init : function(e,text, submitHandler) {
+                        let canvas = document.getElementById('canvas_content');
+  			            let rect = canvas.getBoundingClientRect();
+  			            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  			   
+  			            let outerDiv = document.createElement('div');
+  			            outerDiv.setAttribute('id','canvas_form');
+  			            outerDiv.style.position = 'absolute';
+  			            outerDiv.style.left = (rect.left +stage.width()/8 ) +'px';
+  			            outerDiv.style.top =  (rect.top + scrollTop + stage.height() /6 )  + 'px';
+  			            outerDiv.style.overflow = 'sroll';
+
+  			   
+  			            var innerDiv = document.createElement('div');
+  			            innerDiv.id = 'innerDiv';
+  			            innerDiv.style.position = 'relative';
+  			            innerDiv.style.width = 480 + 'px';
+  			            innerDiv.style.height = 300 + 'px';
+  			            innerDiv.style.margin = '7% auto';
+  			            innerDiv.style.border = 'tan solid 12px';
+  			            innerDiv.style.borderTop = '#bda27e solid 12px';
+  			            innerDiv.style.borderLeft = '#b19876 solid 12px';
+  			            innerDiv.style.borderBottom = '#c9ad86 solid 12px';
+  			            innerDiv.style.boxShadow = '0px 0px 6px 5px rgba(58, 18, 13, 0), 0px 0px 0px 2px #c2a782, 0px 0px 0px 4px #a58e6f, 3px 4px 8px 5px rgba(0, 0, 0, 0.5)';
+  			            innerDiv.style.backgroundImage = 'radial-gradient( circle at left 30%, rgba(34, 34, 34, 0.3), rgba(34, 34, 34, 0.3) 80px, rgba(34, 34, 34, 0.5) 100px, rgba(51, 51, 51, 0.5) 160px, rgba(51, 51, 51, 0.5)), linear-gradient( 215deg, transparent, transparent 100px, #222 260px, #222 320px, transparent), radial-gradient( circle at right, #111, rgba(51, 51, 51, 1))';
+  			            innerDiv.style.backgroundColor = '#607a87';
+
+
+  	                    let form = document.createElement('form');
+      			        form.setAttribute('method','post');
+      			        form.setAttribute('action','');
+      			        form.style.padding = 'padding: 70px 20px 20px';
+      			        let submitButton1 = ReadParams.createButton( text+1, text);
+      			        let cancelButton1 = ReadParams.createButton('cancel1', 'Cancel');
+      			        let submitButton2 = ReadParams.createButton( text+2, text);
+      			        let cancelButton2 = ReadParams.createButton('cancel2','Cancel');
+
+      			   let firstTable = ReadParams.createTable('firstTable',4,[1,3,2,2]);
+      			   let nameLabel = ReadParams.createStyledLabel('Name','name');
+      			   let name = ReadParams.createStyledInput('name','text', 300);
+      			   let topicLabel = ReadParams.createStyledLabel('Topic','topic');
+      			   let topic = ReadParams.createStyledSelect('topic',['Állatok','Névmások'],['allat','nevmas']);
+      			   let rowsLabel = ReadParams.createStyledLabel('Rows','rows');
+      			   let rows = ReadParams.createStyledInput('rows','number', 52, 4,20);
+      			   let columnLabel = ReadParams.createStyledLabel('Columns','columns');
+      			   let columns = ReadParams.createStyledInput('columns','number', 52, 4, 20);
+      			   let goalLabel = ReadParams.createStyledLabel('Goal: ','goal');
+      			   let goalFun = ReadParams.createRadioButton('goal','fun','fun:');
+      			   let goalAssessment = ReadParams.createRadioButton('goal','assesment','assesment: ');
+      			   let timeLimitEnabled = ReadParams.createCheckBox('timeLimitEnabled','Timelimit: ');
+      			   let timeLimitLabel = ReadParams.createStyledLabel('Timelimit: ','timeLimit');
+      			   let timeLimit = ReadParams.createStyledInput('timeLimit','number', 52,1,500);
+
+      			   innerDiv.appendChild(firstTable);
+      			   outerDiv.appendChild(innerDiv);
+      			   document.getElementById('canvas_content').appendChild(outerDiv);
+
+      			   document.getElementById('firstTable').rows[0].cells[0].appendChild(nameLabel);
+      			   document.getElementById('firstTable').rows[0].cells[0].appendChild(name);
+      			   document.getElementById('firstTable').rows[1].cells[0].appendChild(topicLabel);
+      			   document.getElementById('firstTable').rows[1].cells[0].appendChild(topic);
+      			   document.getElementById('firstTable').rows[1].cells[1].appendChild(rowsLabel);
+      			   document.getElementById('firstTable').rows[1].cells[1].appendChild(rows);
+      			   document.getElementById('firstTable').rows[1].cells[2].appendChild(columnLabel);
+      			   document.getElementById('firstTable').rows[1].cells[2].appendChild(columns);
+      			   document.getElementById('firstTable').rows[2].cells[0].appendChild(timeLimitEnabled);
+      			   document.getElementById('firstTable').rows[2].cells[1].appendChild(timeLimitLabel);
+      			   document.getElementById('firstTable').rows[2].cells[1].appendChild(timeLimit);
+      			   document.getElementById('firstTable').rows[3].cells[0].appendChild(goalLabel);
+      			   document.getElementById('firstTable').rows[3].cells[1].appendChild(goalFun);
+      			   document.getElementById('firstTable').rows[3].cells[1].appendChild(goalAssessment);
+
+                   this.funTable = ReadParams.createTable('funTable',2,[2,3]);
+            	   this.funTable.assigned = false;
+
+            	   this.funTable.rows[1].cells[0].appendChild(cancelButton1);
+            	   this.funTable.rows[1].cells[2].appendChild(submitButton1);
+
+                   this.assesmentTable = ReadParams.createTable('assesmentTable',4,[1,1,1,3]);
+                   this.assesmentTable.assigned = false;
+                   let idLabel = ReadParams.createStyledLabel('ID: ','id');
+                   let id = ReadParams.createStyledInput('id','text', 300);
+                   let groupIdLabel = ReadParams.createStyledLabel('GroupID: ','groupId');
+                   let groupId = ReadParams.createStyledInput('groupId','text', 300);
+                   let ddueDateLabel = ReadParams.createStyledLabel('Due date: ','dueDate');
+                   let dueDate = ReadParams.createDate('dueDate');
+                   this.assesmentTable.rows[0].cells[0].appendChild(idLabel);
+                   this.assesmentTable.rows[0].cells[0].appendChild(id);
+                   this.assesmentTable.rows[1].cells[0].appendChild(groupIdLabel);
+                   this.assesmentTable.rows[1].cells[0].appendChild(groupId);
+                   this.assesmentTable.rows[2].cells[0].appendChild(ddueDateLabel);
+                   this.assesmentTable.rows[2].cells[0].appendChild(dueDate);
+                   this.assesmentTable.rows[3].cells[1].appendChild(cancelButton2);
+                   this.assesmentTable.rows[3].cells[2].appendChild(submitButton2);
+
+              },
+              setupHandlers : function() {
+                               document.getElementById('fun').addEventListener('change', (e) => ReadParams.funSettings(e));
+                               document.getElementById('assesment').addEventListener('change', (e) => ReadParams.assesmentSettings(e));
+                               document.querySelector('#rows').addEventListener('keydown', (e) => {alert('nem'); e.preventDefault(); } );
+                               document.querySelector('#columns').addEventListener('keydown', (e) => {alert('nem'); e.preventDefault(); } );
+
+                               this.funTable.querySelector('#cancel1').addEventListener('click', (e) =>
+                            	 		Controller([this.removeForm(), Setup.initHandlers()]) );
+                               this.assesmentTable.querySelector('#cancel2').addEventListener('click', (e) =>
+                            	 		Controller([this.removeForm(), Setup.initHandlers()]));
+
+                               console.log('Submit id: ' + this.funTable.querySelector('#Submit1') );
+                               if( this.funTable.querySelector('#Submit1')) {
+                            		console.log('Submit button van');
+                            		Parameters.others.creationMode = 'machine1';
+                            		this.funTable.querySelector('#Submit1').addEventListener( 'click', (e) => {
+                            		console.log('submit');
+                            		     let valid = Parser.validate();
+                                          if(valid === '') {
+                                               Controller(Parser.parseTableData(),[this.removeForm(), Sender.sendTable()]);
+                                          }
+                                          else {
+                                              alert(valid);
+                                          }
+                            		});
+                            		this.assesmentTable.querySelector('#Submit2').addEventListener( 'click', (e) => {
+                                        let valid = Parser.validate();
+                                        if(valid === '') {
+                                           Controller(Parser.parseTableData(),[this.removeForm(), Sender.sendTable()]);
+                                       }
+                                       else {
+                                           alert(valid);
+                                      }
+                                   });
+                               }
+                               if( this.funTable.querySelector('#Create1')) {
+                                   console.log('Create button van');
+                                   this.funTable.querySelector('#Create1').addEventListener('click', (e) => {
+                                          let valid = Parser.validate();
+                                          if(valid === '') {
+                            		            Controller(Parser.parseTableData(),[this.removeForm(),
+                             		            CreateTable.init(), CreateTable.setupHandlers(e, true),
+                             		            CreateTable.setupCellHandlers(e)])
+                             		         }
+                                           else {
+                            		            alert(valid);
+                                          }
+                                    });
+                                    this.assesmentTable.querySelector('#Create2').addEventListener('click',(e) => {
+                                        let valid = Parser.validate();
+                                        if(valid === '') {
+                             		           Controller(Parser.parseTableData(),[this.removeForm(),
+                             		           CreateTable.init(), CreateTable.setupHandlers(e, true),
+                             		           CreateTable.setupCellHandlers(e)])
+                                        }
+                                        else {
+                            		            alert(valid);
+                                         }
+                                     });
+                              }
+                            },
+              createStyledInput : function(id, type, width, min,max) {
+                            			   let input = document.createElement('input');
+                            			   input.setAttribute('type',type);
+                            			   input.id = id;
+                            			   if(type === 'number') {
+                            				   console.log('Number type');
+                            				   input.min = min;
+                            				   input.max = max;
+                            				   input.value = min;
+                            			   }
+
+                            			   input.maxLength = 8;
+                            			   input.style.width = width +  'px';
+                            			   input.style.verticalAlign = 'middle';
+                            			   input.style.paddingLeft = 6 + 'px';
+                            			   input.style.marginTop = 8 + 'px';
+                            			   input.style.marginLeft = 8 + 'px';
+                            			   input.style.background =  '#1c1818';
+                            			   input.style.border = 'none';
+                            			   input.style.fontFamily = '\'Permanent Marker\', cursive';
+                            			   input.style.fontSize = 18 + 'px';
+                            			   input.style.color = '#cad7de';
+                            			   input.style.lineHeight = '.6em';
+                            			   input.style.outline = 'none';
+
+                            			   return input;
+                            	 		},
+               createStyledLabel : function(text,id) {
+                             	 			var label = document.createElement('Label');
+                             	 			label.innerHTML = text;
+                             	 		 	label.for = id;
+                             	 			label.style.marginLeft = 8 + 'px';
+                             	 			label.style.verticalAlign = 'middle';
+                             	 			label.style.textAlign = 'left';
+                             	 			label.style.fontFamily = '\'Permanent Marker\', cursive';
+                             	 			label.style.fontSize = 18 + 'px';
+                             	 			label.style.color = 'rgba(238, 238, 238, 0.7)';
+
+                             	 			return label;
+                             	 		},
+                             	 		createStyledSelect : function(id, options, values) {
+                             	 			let select = document.createElement('select');
+                             	 			select.id = id;
+                             				select.style.marginLeft = 22 + 'px';
+                             				select.style.marginTop = 6 + 'px';
+                             				select.style.fontFamily = '\'Permanent Marker\', cursive';
+                             				select.style.background =  '#1c1818';
+                             				select.style.color = '#cad7de';
+                             	 			for (let i = 0; i < options.length; i++) {
+                             	 			   let option = document.createElement('option');
+                             	 			   option.value = values[i];
+                             	 			   option.text = options[i];
+                             	 			   option.style.padding = 6 + 'px';
+                             	 			   select.appendChild(option);
+                             	 			}
+
+                             	 			return select;
+                             	 		},
+                             	 		createRadioButton : function(group, value, labelText) {
+                             	 			let div = document.createElement('div');
+                             	 			let label = ReadParams.createStyledLabel(labelText, value);
+                             	 		    let radio = document.createElement('input');
+                             	 		    radio.type = 'radio';
+                             	 		    radio.id = value;
+                             	 		    radio.name = group;
+                             	 		    radio.value = value;
+                             	 		    radio.style.verticalAlign = 'middle';
+                             				radio.style.marginTop = -18 + 'px';
+                             				radio.style.marginLeft= 52 + 'px';
+                             				div.appendChild(label);
+                             				div.appendChild(radio);
+                             				return div;
+
+                             	 		},
+                             	 		createCheckBox : function(id, labelText) {
+                             	 			let div = document.createElement('div');
+                             	 			let label = ReadParams.createStyledLabel(labelText, id);
+                             	 			let checkbox = document.createElement('input');
+                             	 			checkbox.type = 'checkbox';
+                             	 			checkbox.id = id;
+
+                             				div.appendChild(label);
+                             				div.appendChild(checkbox);
+
+                             				return div;
+                             	 		},
+                             	 		createButton : function(id, text) {
+                             	 			 let button = document.createElement('input');
+                             	 			 button.type = 'submit';
+                             	 			 button.id = id;
+                             	 			 button.value = text;
+                             	 			 button.classList.add('wordSearchButton');
+                             	 			 button.style.margin = 12 + 'px';
+                             	 			 button.style.color = '#996633';
+                             	 			 button.style.textShadow = '0px 1px 0px rgba(255,255,255,.4)';
+                             	 			 button.style.background= '#232426';
+
+
+                             	 			 return button;
+                             	 		},
+                             	 		createDate : function(id) {
+                             	 			let date = document.createElement('input');
+                             	 			date.type = 'date';
+                             	 			date.id = id;
+                             	 			date.style.color = '#996633';
+                             	 			date.style.textShadow = '0px 1px 0px rgba(255,255,255,.4)';
+                             	 			date.style.background= '#232426';
+
+                             	 			return date;
+                             	 		},
+                             	 		createTable : function(id, rows, columnPattern) {
+                             	 			let table = document.createElement('table');
+                             	 			table.border = '0px';
+                             	 			table.id = id;
+                             	 		    let tableBody = document.createElement('tbody');
+                             	 		    for (let j = 0; j < rows; j++) {
+                             	 		       let row = document.createElement('tr');
+                             	 		       for (let i = 0; i < columnPattern[j]; i++) {
+                             		 		     let cell = document.createElement('td');
+                             	 		    	 if(columnPattern[j] === 1) {
+                             		 		    	  cell.colSpan  = 3;
+                             		 		      }
+                             	 		    	if(columnPattern[j] === 2 && i===1) {
+                             		 		    	  cell.colSpan  = 2;
+                             		 		      }
+                             	 		          row.appendChild(cell);
+                             	 		       }
+
+
+                             	 		      tableBody.appendChild(row);
+                             	 		    }
+                             	 		    table.appendChild(tableBody);
+                             	 		    return table;
+                             	 		},
+                             	 		funSettings : function(e) {
+                             	 			console.log('Fun fut');
+                             	 			if(this.assesmentTable.assigned) {
+                             	 				this.assesmentTable.assigned = false
+                             	 				document.getElementById('innerDiv').style.height = 320 + 'px';
+                             	 				document.getElementById('innerDiv').removeChild(this.assesmentTable);
+                             	 			}
+                             	 			document.getElementById('innerDiv').appendChild(this.funTable);
+                             	 			this.funTable.assigned = true;
+                             	 		},
+                             	 		assesmentSettings : function(e) {
+                             	 			console.log('Asses fut');
+                             	 			if(this.funTable.assigned) {
+                             	 				this.funTable.assigned = false;
+                             	 				document.getElementById('innerDiv').removeChild(this.funTable);
+                             	 			}
+                             	 			document.getElementById('innerDiv').appendChild(this.assesmentTable);
+                              				document.getElementById('innerDiv').style.height = 520 + 'px';
+
+                             	 			this.assesmentTable.assigned = true;
+                             	 		},
+                             	 		removeForm : function() {
+                             	 			document.querySelector('#canvas_content').removeChild(document.querySelector('#canvas_form'));
+                             	 		}
+
+          }
+          let CreateTable  = {
+          	 	anim : null,
+          	 	left : 0,
+          	 	height : 0,
+          	 	size : 0,
+          	 	cells : [],
+          	 	activeCells : [],
+          	 	letters : [],
+          	 	letterTexts : [],
+          	 	activeLetter : null,
+          	 	editMode : false,
+          	 	addCell : null,
+          	 	deleteCell : null,
+          	 	editCell : null,
+          	 	finish : null,
+          	 	addMode : false,
+          	 	deleteMode : false,
+          	 	clear :  null,
+          	 	sendToServer : null,
+          	 	init : function() {
+          	 				this.initLetters();
+          	 				this.initActiveCells();
+          	 				this.left = stage.width()/14- (Parameters.tableParams.rows /2);
+          	 				this.height = 70;
+          	 				this.size = stage.width()/18- (Parameters.tableParams.rows * 1.6);
+          	 				this.drawTable(this.left,this.height,this.size);
+
+          	 				this.addCell = new Konva.Text({
+          				        x: this.left + Parameters.tableParams.columns   * this.size + this.size,
+          				        y:  50,
+          				        id : 'addCell',
+          				        text: 'Add Cell',
+          				        fontSize: 24 ,
+          				        fontFamily: 'Calibri' ,
+          				        fill: 'black'
+          				   });
+          	 			   this.deleteCell = new Konva.Text({
+          				        x: this.left + Parameters.tableParams.columns   * this.size + this.size,
+          				        y:  90,
+          				        id : 'deleteCell',
+          				        text: 'Delete Cell',
+          				        fontSize: 24 ,
+          				        fontFamily: 'Calibri' ,
+          				        fill: 'black'
+          				   });
+          	 			   this.clearCell = new Konva.Text({
+          				        x: this.left + Parameters.tableParams.columns   * this.size + this.size,
+          				        y:  210,
+          				        id : 'clearCell',
+          				        text: 'Reset Cell',
+          				        fontSize: 24 ,
+          				        fontFamily: 'Calibri' ,
+          				        fill: 'black'
+          				    });
+          	 			  this.editCell = new Konva.Text({
+          				        x: this.left + Parameters.tableParams.columns   * this.size + this.size,
+          				        y:  130,
+          				        id : 'editCell',
+          				        text: 'Edit Cell',
+          				        fontSize: 24 ,
+          				        fontFamily: 'Calibri' ,
+          				        fill: 'black'
+          				    });
+          	 			 this.finish = new Konva.Text({
+          				        x: this.left + Parameters.tableParams.columns   * this.size + this.size,
+          				        y:  300,
+          				        id : 'editCell',
+          				        text: 'Finish',
+          				        fontSize: 24 ,
+          				        fontFamily: 'Calibri' ,
+          				        fill: 'black'
+          				    });
+
+          	 			    layer.add(this.addCell);
+          	 			    layer.add(this.deleteCell);
+          	 			    layer.add(this.clearCell);
+          	 			    layer.add(this.editCell);
+          	 			    layer.add(this.finish);
+          	 				layer.draw();
+
+          	 			},
+          	 			initActiveCells : function() {
+          	 				for(let y=0; y< Parameters.tableParams.rows; y++ ) {
+          	 					this.activeCells[y] = new Array();
+          	 					for(let x=0;x< Parameters.tableParams.columns; x++ ) {
+          	 						this.activeCells[y][x] = true;
+          	 					}
+          	 				}
+          	 			},
+          	 			initLetters : function() {
+          	 				for(let y=0; y< Parameters.tableParams.rows; y++ ) {
+          	 					this.letters[y] = new Array(2);
+          	 					for(let x=0;x< Parameters.tableParams.columns; x++ ) {
+          	 						this.letters[y][x] = { letter : '#'};
+
+          	 					}
+          	 				}
+          	 			},
+          	 			initLettersFromParams : function() {
+                           for(let y=0; y< Parameters.tableParams.rows; y++ ) {
+                               this.letters[y] = new Array(2);
+                               for(let x=0;x< Parameters.tableParams.columns; x++ ) {
+                                  this.letters[y][x] = { letter : Parameters.tableParams.letters[y][x]};
+
+                               }
+                           }
+                        },
+          	 			drawTable : function(left,height,size) {
+          	 			   layer.clear(left, height, parseInt(Parameters.tableParams.rows*size) +5
+          	 						, parseInt(Parameters.tableParams.columns*size) +5);
+
+          	 				for(let y=0; y< Parameters.tableParams.rows; y++ ) {
+          	 					this.cells[y] = new Array(2);
+          	 					for(let x=0;x< Parameters.tableParams.columns; x++ ) {
+
+          	 						let rect = new Konva.Rect({
+          	 					        x: left + x * size +5,
+          	 					        y: height + y *size + 5,
+          	 					        width: size,
+          	 					        height: size,
+          	 					        fill: this.activeCells[y][x] ?  '#e7dff0' : 'white',
+          	 					        stroke: this.activeCells[y][x] ? 'black' : 'white',
+          	 					        strokeWidth: this.activeCells[y][x] ?  2 : 0
+          	 					    });
+          	 						rect.posX = x;
+          	 						rect.posY = y;
+          	 						layer.add(rect);
+          	 						this.cells[y][x] = rect;
+          	 					}
+          	 				}
+          	 				layer.draw();
+          	 				for(let y=0; y< Parameters.tableParams.rows; y++ ) {
+          	 					this.letterTexts[y] = new Array(2);
+          						for(let x=0;x< Parameters.tableParams.columns; x++ ) {
+          	 						let letter = new Konva.Text({
+          					          x: left + x * size + size/3,
+          					          y: height + y * size + size/3,
+          					          text : this.letters[y][x].letter,
+          					          fontSize : size /2,
+          					          fill: this.activeCells[y][x] ? 'black' : 'white'
+          					       });
+          	 						letter.posX = x;
+          	 						letter.posY = y;
+          	 						layer.add(letter);
+          	 						this.letterTexts[y][x] = letter;
+          	 					}
+          	 				}
+          	 				layer.draw();
+          	 			},
+          	 			drawLetter : function(left, height, size, x,y) {
+          	 				layer.clear(left + x * size + 5, height + y * size +5, size, size);
+          	 				this.cells[y][x].stroke('red');
+          	 				this.cells[y][x].strokeWidth(4);
+          	 				this.cells[y][x].moveToTop();
+          	 				this.letterTexts[y][x].moveToTop();
+          	 				layer.draw();
+
+          	 			},
+          	 			setupHandlers : function(event) {
+          	 				this.addCell.on('click',  (e) => {
+          						 this.addMode =true;
+          						 this.deleteMode = false;
+          						 if(this.editMode === true) {
+          							 Controller([ CreateTable.removeActiveCellEditing()]);
+          						 }
+          						 else {
+          							 Controller([ CreateTable.removeTable(),
+          							 CreateTable.drawTable(CreateTable.left,CreateTable.height,CreateTable.size),
+          							 CreateTable.setupCellHandlers(e)
+          						  ]);
+          						 }
+          	 				})
+          	 				this.deleteCell.on('click',  (e) => {
+          						 this.addMode =false;
+          						 this.deleteMode = true;
+
+          						 if(this.editMode === true) {
+          							 Controller([ CreateTable.removeActiveCellEditing()]);
+          						 }
+          						 else {
+          							 Controller([ CreateTable.removeTable(),
+          							 CreateTable.drawTable(CreateTable.left,CreateTable.height,CreateTable.size),
+          							 CreateTable.setupCellHandlers(e)
+          						  ]);
+          						 };
+          	 				})
+          	 				this.editCell.on('click',  (e) => {
+          	 					 this.addMode =false;
+          						 this.deleteMode = false;
+
+          						 Controller([ CreateTable.removeTable(),
+          						 CreateTable.drawTable(CreateTable.left,CreateTable.height,CreateTable.size),
+          						 CreateTable.setupCellHandlers(e) ]);
+
+          	 				})
+          	 				this.clearCell.on('click',  (e) => {
+          	 					 this.addMode =false;
+          						 this.deleteMode = false;
+
+          						 Controller([ CreateTable.removeTable(), CreateTable.removeEditors(),
+          						 CreateTable.init(), CreateTable.setupHandlers(e),
+          						 CreateTable.setupCellHandlers(e)]);
+
+          	 				})
+          	 				this.finish.on('click',  (e) => {
+          	 					 Controller([CreateTable.end()])
+          	 				})
+
+          	 			},
+          	 			removeEditors : function() {
+          	 			    CreateTable.addCell.remove();
+          	 			    CreateTable.addCell = null;
+          	 			    CreateTable.deleteCell.remove();
+          	 			    CreateTable.deleteCell = null;
+                            CreateTable.editCell.remove();
+                            CreateTable.editCell = null;
+                            CreateTable.finish.remove();
+                            CreateTable.clearCell.remove();
+          	 			    layer.draw();
+          	 			},
+          	 			drawFinalisedTable : function(foundWordsString) {
+          	 			    let foundWordsLabel = new Konva.Text({
+                                x: this.left + Parameters.tableParams.columns   * this.size + this.size,
+                                y:  50,
+                                id : 'addCell',
+                                text: 'F O U N D   W O R D S',
+                                fontSize: 24 ,
+                                fontFamily: 'Calibri' ,
+                                 fill: 'black'
+                             });
+                             layer.add(foundWordsLabel);
+                             layer.draw();
+
+                             let steps = 3;
+                             let foundWords = JSON.parse(foundWordsString);
+                             for(let i=0; i<20; i++) {
+                                if(foundWords[i] !== undefined ) {
+                                    let length = new Konva.Text({
+                                         x: this.left + Parameters.tableParams.columns   * this.size + this.size,
+                                         y:  50 + steps *14,
+                                         text: i + '-> ',
+                                         fontSize: 14,
+                                         fontFamily: 'Calibri' ,
+                                         fill: 'black'
+                                    });
+                                    steps++;
+                                    layer.add(length);
+                                    for(let j=0; j<foundWords[i].length; j++) {
+                                         let word = new Konva.Text({
+                                             x: this.left + Parameters.tableParams.columns   * this.size + this.size + 5,
+                                             y:  50 + steps *14+2,
+                                             text: foundWords[i][j].word + '   ' + foundWords[i][j].pos.y + ':' +
+                                                        foundWords[i][j].pos.x + '  ' + foundWords[i][j].direction +
+                                                        '   reverse: ' + foundWords[i][j].reverse,
+                                             fontSize: 14,
+                                             fontFamily: 'Calibri' ,
+                                             fill: 'black'
+                                          });
+                                          layer.add(word);
+                                          steps++;
+                                    }
+
+                                    steps++;
+                                    layer.draw();
+                                }
+                             }
+                             this.drawSendButton();
+          	 			},
+          	 			drawSendButton : function() {
+                             this.sendToServer = new Konva.Text({
+                                x: this.left + this.size,
+                                y:  10,
+                                text:  'SEND TO SERVER',
+                                fontSize: 25,
+                                fontFamily: 'Calibri' ,
+                                fill: 'black'
+                           });
+                           layer.add(this.sendToServer);
+                           layer.draw();
+
+                           this.sendToServer.on('click' , (e) => Controller([this.clearUp(), Sender.saveTable()]));
+          	 			},
+          	 			setupCellHandlers : function(e) {
+          	 				for(let y=0; y< Parameters.tableParams.rows; y++ ) {
+          	 					for(let x=0;x< Parameters.tableParams.columns; x++ ) {
+          	 					   if(!this.addMode && ! this.deleteMode) {
+          	 						 this.letterTexts[y][x].on('click',  (e) =>
+          	 							Controller([CreateTable.disableHandlers(),  CreateTable.modifyCell(e)]) )
+          	 					   }
+          	 					   else if(this.addMode ) {
+          		 						 this.cells[y][x].on('click',  (e) =>
+          		 							Controller([ CreateTable.giveCell(e)]) )
+          		 						this.letterTexts[y][x].on('click',  (e) =>
+          		 							Controller([ CreateTable.giveCell(e)]) )
+          	 					   }
+          	 					   else if(this.deleteMode) {
+          	 						  this.letterTexts[y][x].on('click',  (e) =>
+          	 							Controller([ CreateTable.removeCell(e)]) )
+          	 					   }
+          	 					}
+          	 				}
+          	 			},
+          	 			disableHandlers : function() {
+          	 				for(let y=0; y< Parameters.tableParams.rows; y++ ) {
+          	 					for(let x=0;x< Parameters.tableParams.columns; x++ ) {
+          	 						this.letterTexts[y][x].off('click');
+          	 					}
+          	 				}
+          	 			},
+          	 			modifyCell : function(e) {
+          	 				this.editMode = true;
+          	 				let x = e.target.posX;
+          	 				let y = e.target.posY;
+          	 				CreateTable.drawLetter(CreateTable.left,CreateTable.height,CreateTable.size, x,y);
+
+          		 			this.activeLetter = { x:x, y:y };
+
+          		 			let animCount = 0;
+          		 			this.anim = new Konva.Animation(function(frame) {
+          		 			    var time = frame.time,
+          		 			        timeDiff = frame.timeDiff,
+          		 			        frameRate = frame.frameRate;
+          					    animCount = animCount % 60
+          					    if(animCount >29) {
+          					    	CreateTable.letterTexts[y][x].visible(false);
+          					    }
+          					    else {
+          					    	CreateTable.letterTexts[y][x].visible(true);
+          					    }
+          					    animCount++;
+          		 			  }, layer);
+
+          		 			this.anim.start();
+          		 			window.addEventListener(
+          		 					'keydown', CreateTable.readLetter, false	);
+          	 			},
+          	 			giveCell : function(e) {
+          	 				this.activeCells[e.target.posY][e.target.posX] = true;
+          	 				Controller([ this.removeTable(),
+          	 					this.drawTable(this.left,this.height,this.size),
+          	 					this.setupCellHandlers(e)]);
+          	 			},
+          	 			removeCell : function(e) {
+          	 				this.activeCells[e.target.posY][e.target.posX] = false;
+          	 				Controller([ this.removeTable(),
+          	 					this.drawTable(this.left,this.height,this.size),
+          	 					this.setupCellHandlers(e)]);
+
+          	 			},
+          	 			removeActiveCellEditing : function() {
+          	 				let ev = new KeyboardEvent('keydown', {
+          	 					code: 'Enter',
+          	 					key: 'Enter',
+          	 					type: 'keydown'
+          	 				});
+          	 				window.dispatchEvent(ev);
+          	 			},
+          	 			removeTable : function() {
+          	 				for(let y=0; y< Parameters.tableParams.rows; y++ ) {
+          						for(let x=0;x< Parameters.tableParams.columns; x++ ) {
+           					       CreateTable.letterTexts[y][x].remove();
+           					       CreateTable.letterTexts[y][x] = null;
+           					       CreateTable.cells[y][x].remove();;
+           					       CreateTable.cells[y][x] = null;
+          						}
+           					}
+          	 			},
+          	 			readLetter : function(e) {
+          	 				let c = e.key
+
+          	 				if (c.charCodeAt(0) > 127 || (c.length === 1 && c.match(/[a-z]/i) || c=='Enter' )  ) {
+          	 					CreateTable.editMode=false;
+          	 					for(let y=0; y< Parameters.tableParams.rows; y++ ) {
+          							for(let x=0;x< Parameters.tableParams.columns; x++ ) {
+          	 					       CreateTable.letterTexts[y][x].remove();
+          	 					       CreateTable.letterTexts[y][x] = null;
+          	 					       CreateTable.cells[y][x].remove();;
+          	 					       CreateTable.cells[y][x] = null;
+          							}
+          	 					}
+          	 					if(c!=='Enter') {
+          	 						CreateTable.letters[CreateTable.activeLetter.y][CreateTable.activeLetter.x].letter = c;
+          	 					}
+
+          	 					CreateTable.anim.stop();
+          	 					CreateTable.drawTable(CreateTable.left,CreateTable.height,CreateTable.size);
+
+
+          	 					CreateTable.setupCellHandlers(e);
+
+          	 					window.removeEventListener('keydown', CreateTable.readLetter);
+          	 				}
+
+          	 			},
+          	 			end : function() {
+          	 				console.log('F I N I S H');
+          	 				for(let y=0; y< Parameters.tableParams.rows; y++ ) {
+          	 					Parameters.tableParams.letters[y] = new Array();
+          	 					for(let x=0;x< Parameters.tableParams.columns; x++ ) {
+          	 						if(this.activeCells[y][x] === true) {
+          	 							Parameters.tableParams.letters[y][x] = this.letters[y][x].letter;
+          	 						}
+          	 						else {
+          	 							Parameters.tableParams.letters[y][x] = '~';
+          	 						}
+          	 					}
+          	 				}
+          	 				Parameters.others.creationMode = 'Human';
+          	 				Sender.sendTable();
+          	 			},
+          	 			clearUp : function() {
+
+                         }
+          	 	}
+          let Parser =  {
+          	 		validate : function() {
+          	 			let result = '';
+          	 			let firstTable = document.querySelector('#firstTable');
+          	 			if(firstTable.querySelector('#name').value === '') {
+          	 				result += 'Name required\n';
+          	 			}
+          	 			if(document.querySelector('#assesmentTable'))  {
+          	 				if(document.querySelector('#assesmentTable').querySelector('#groupId').value === '')  {
+          	 					result += 'Id is required\n';
+          	 				}
+          	 				if(document.querySelector('#assesmentTable').querySelector('#id').value === '')  {
+          	 					result += 'GroupId is required\n';
+          	 				}
+          	 				if(document.querySelector('#assesmentTable').querySelector('#dueDate').value === '')  {
+          	 					result += 'Date must be set\n';
+          	 				}
+          	 				else  {
+          	 					let date = new Date();
+          	 					if(new Date(document.querySelector('#assesmentTable').querySelector('#dueDate').value) <= date) {
+          	 						result += 'Invalid date';
+          	 					}
+          	 				}
+
+          	 			}
+          	 			return result;
+          	 		},
+          	 		parseTableData : function(e) {
+          	 		   	let firstTable = document.querySelector('#firstTable');
+
+          	 		   	Parameters.tableParams.name = firstTable.querySelector('#name').value;
+          	 		    Parameters.tableParams.topic = firstTable.querySelector('#topic').value;
+          	 		    Parameters.tableParams.rows = firstTable.querySelector('#rows').value;
+          	 		    Parameters.tableParams.columns = firstTable.querySelector('#columns').value;
+          	 		    if(firstTable.querySelector('#timeLimitEnabled').checked) {
+          	 		    	Parameters.tableParams.timeLimit = firstTable.querySelector('#timeLimit').value;
+          	 		    }
+          	 		    else {
+          	 		    	Parameters.tableParams.timeLimit = 0;
+          	 		    }
+          	 			if(document.querySelector('#funTable'))  {
+          	 				Parameters.others.goal = 'fun';
+          	 			}
+          	 			if(document.querySelector('#assesmentTable'))  {
+          	 				Parameters.others.goal = 'assesment';
+          	 				Parameters.assesment.id = document.querySelector('#assesmentTable').querySelector('#id').value;
+          	 				Parameters.assesment.groupId = document.querySelector('#assesmentTable').querySelector('#groupId').value;
+          	 				Parameters.assesment.dueDate = document.querySelector('#assesmentTable').querySelector('#dueDate').value;
+          	 			}
+          	 		},
+          	 		parseFoundWords : function(response, machine) {
+          	 		    if(machine) {
+          	 		        response = JSON.parse(JSON.stringify(JSON.parse(response).foundWords));
+          	 		    }
+                        else {
+                            response = JSON.parse(response);
+                        }
+                        for(let i=2;i<20;i++) {
+                            let iString = JSON.stringify(response[i + '']);
+                            if(iString === undefined) {
+                                continue;
+                            }
+                            let iLenghtWords = JSON.parse(iString);
+                            for(let j=0; j< iLenghtWords.length; j++) {
+                                 Parameters.tableParams.words.push(iLenghtWords[j])
+                            }
+                        }
+
+          	 		}
+          	 	}
+     let Sender = {
+     	 		sendTable : function() {
+     	 			let jsonTable = JSON.stringify(Parameters);
+     	 			if(Parameters.others.creationMode=='Human') {
+     	 			    this.sendHumanTable(jsonTable);
+     	 			}
+     	 			else {
+                        this.sendMachineTable(jsonTable);
+     	 			}
+     	 		},
+     	 		sendHumanTable : function(jsonTable) {
+                     let xhttp = new XMLHttpRequest();
+                     xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                             Controller([CreateTable.removeEditors(), Parser.parseFoundWords(this.responseText, false),
+                                            CreateTable.drawFinalisedTable(this.responseText)]);
+                         }
+                     };
+                     xhttp.open('POST', 'http://localhost/wordtablehuman/', true);
+
+                     xhttp.send(jsonTable);
+                 },
+                 sendMachineTable : function(jsonTable) {
+                     let xhttp = new XMLHttpRequest();
+                        xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                             let tempTable = JSON.parse(this.responseText);
+                             	 for(let y=0; y<tempTable.createdTable.length; y++) {
+                             	 	Parameters.tableParams.letters[y] = new Array();
+                             	 	for(let x=0; x<tempTable.createdTable[0].length; x++) {
+                             	 		Parameters.tableParams.letters[y][x]  = tempTable.createdTable[y].charAt(x) ;
+                             	 	}
+                             }
+                             let foundWordsString = JSON.stringify(tempTable.foundWords);
+                             Controller([ CreateTable.initLettersFromParams(),  Parser.parseFoundWords(this.responseText, true),
+                                          CreateTable.initActiveCells(),  CreateTable.drawTable(250,50,35),
+                                          CreateTable.drawFinalisedTable(foundWordsString)]);
+                         }
+                      };
+                      xhttp.open('POST', 'http://localhost/wordtablemachine/', true);
+
+                      xhttp.send(jsonTable);
+                 },
+                 saveTable : function() {
+                    let xhttp = new XMLHttpRequest();
+                       xhttp.onreadystatechange = function() {
+                          if (this.readyState == 4 && this.status == 200) {
+                               let id = JSON.stringify(JSON.parse(this.responseText).id);
+                                if( id == -1) {
+                                    alert('Error:  ' + JSON.stringify(JSON.parse(this.responseText).name));
+                                }
+                                else {
+                                    alert('Rögzítés sikeres')
+                                }
+                                layer.clear();
+                                stage.clear();
+                                stage.removeChildren();
+                                stage.remove();
+                                stage = null;
+                                Parameters = null;
+                                firstSendParameters = null;
+                                document.getElementById('canvas_content').textContent = '';
+                            }
+                         };
+                         xhttp.open('POST', 'http://localhost/wordtablesave/', true);
+                         xhttp.send(JSON.stringify(Parameters));
+                 }
+     	 	}
+	 LoadAssets.init();
+    }());

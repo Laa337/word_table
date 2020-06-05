@@ -1,0 +1,543 @@
+ (function() {
+            let layer = null;
+            let stage = null;
+            let  imagesObj = {};
+            let dynamicImageSrcs = [];
+            let dynamicImagesIds = [];
+            let SelectTable = {
+                init : function() {
+                    console.log('init fut');
+                    stage = new Konva.Stage({
+                        container: 'canvas_content',
+                        width: window.innerWidth *1.4,
+                        height: window.innerHeight *1.4
+                    });
+                    layer = new Konva.Layer();
+                    stage.add(layer);
+                    Sender.sendListTables()
+                }
+            };
+            let Controller = (funcs) => {
+
+            };
+            let Parameters = {
+                table : {
+                    letters : [],
+                    solutions : [],
+                    arrows : []
+                },
+                definitions : {
+                    definition : []
+                },
+                pictureSrc : null
+
+            };
+            let Selects = {
+                ids : [],
+                names : []
+            };
+            let CreateSelectTable = {
+                init : function() {
+                    let canvas = document.getElementById('canvas_content');
+                    let rect = canvas.getBoundingClientRect();
+                    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                    let outerDiv = document.createElement('div');
+                    outerDiv.setAttribute('id','canvas_form');
+                    outerDiv.style.position = 'absolute';
+                    outerDiv.style.left = (rect.left +stage.width()/8 ) +'px';
+                    outerDiv.style.top =  (rect.top + scrollTop + stage.height() /6 )  + 'px';
+                    outerDiv.style.overflow = 'sroll';
+
+                    let innerDiv = document.createElement('div');
+                    innerDiv.id = 'innerDiv';
+                    innerDiv.style.position = 'relative';
+                    innerDiv.style.width = 480 + 'px';
+                    innerDiv.style.height = 300 + 'px';
+                    innerDiv.style.margin = '7% auto';
+                    innerDiv.style.border = 'tan solid 12px';
+                    innerDiv.style.borderTop = '#bda27e solid 12px';
+                    innerDiv.style.borderLeft = '#b19876 solid 12px';
+                    innerDiv.style.borderBottom = '#c9ad86 solid 12px';
+                    innerDiv.style.boxShadow = '0px 0px 6px 5px rgba(58, 18, 13, 0), 0px 0px 0px 2px #c2a782, 0px 0px 0px 4px #a58e6f, 3px 4px 8px 5px rgba(0, 0, 0, 0.5)';
+                    innerDiv.style.backgroundImage = 'radial-gradient( circle at left 30%, rgba(34, 34, 34, 0.3), rgba(34, 34, 34, 0.3) 80px, rgba(34, 34, 34, 0.5) 100px, rgba(51, 51, 51, 0.5) 160px, rgba(51, 51, 51, 0.5)), linear-gradient( 215deg, transparent, transparent 100px, #222 260px, #222 320px, transparent), radial-gradient( circle at right, #111, rgba(51, 51, 51, 1))';
+                    innerDiv.style.backgroundColor = '#607a87';
+
+                    let form = document.createElement('form');
+                    form.setAttribute('id',  'scandiForm');
+                    form.setAttribute('method','post');
+                    form.setAttribute('action','');
+                    form.style.padding = 'padding: 70px 20px 20px';
+
+                    let submitButton = this.createButton( 'Submit', 'Submit');
+                    let table = this.createTable('firstTable',3,[1,2,2]);
+                    let selectLabel = this.createStyledLabel('Select a table from the list ','selectLabel');
+                    let tableLabel = this.createStyledLabel('Tables:  ','table');
+                    let tables = this.createStyledSelect('table', Selects.ids, Selects.names);
+
+                    form.appendChild(selectLabel);
+                    form.appendChild(tableLabel);
+                    form.appendChild(tables);
+                    form.appendChild(submitButton);
+
+                    innerDiv.appendChild(form);
+                    innerDiv.appendChild(table);
+                    outerDiv.appendChild(innerDiv);
+                    document.getElementById('canvas_content').appendChild(outerDiv);
+
+                    document.getElementById('firstTable').rows[0].cells[0].appendChild(selectLabel);
+                    document.getElementById('firstTable').rows[1].cells[0].appendChild(tableLabel);
+                    document.getElementById('firstTable').rows[1].cells[1].appendChild(tables);
+                    document.getElementById('firstTable').rows[2].cells[1].appendChild(submitButton);
+
+                    this.setupHandlers();
+
+                },
+                createStyledLabel : function(text,id) {
+                  let label = document.createElement('Label');
+                  label.innerHTML = text;
+                  label.for = id;
+                  label.style.marginLeft = 8 + 'px';
+                  label.style.verticalAlign = 'middle';
+                  label.style.textAlign = 'left';
+                  label.style.fontFamily = '\'Permanent Marker\', cursive';
+                  label.style.fontSize = 18 + 'px';
+                  label.style.color = 'rgba(238, 238, 238, 0.7)';
+
+                    return label;
+                },
+                createStyledSelect : function(id,values, options) {
+                     let select = document.createElement('select');
+                     select.id = id;
+                     select.style.marginLeft = 22 + 'px';
+                     select.style.marginTop = 6 + 'px';
+                     select.style.fontFamily = '\'Permanent Marker\', cursive';
+                     select.style.background =  '#1c1818';
+                     select.style.color = '#cad7de';
+                     for (let i = 0; i < options.length; i++) {
+                        let option = document.createElement('option');
+                        option.value = values[i];
+                        option.text = options[i];
+                        option.style.padding = 6 + 'px';
+                        select.appendChild(option);
+                     }
+
+                    return select;
+                 },
+                 createButton : function(id, text) {
+                     let button = document.createElement('input');
+                     button.type = 'submit';
+                     button.id = id;
+                     button.value = text;
+                     button.classList.add('wordSearchButton');
+                     button.style.margin = 12 + 'px';
+                     button.style.color = '#996633';
+                     button.style.textShadow = '0px 1px 0px rgba(255,255,255,.4)';
+                     button.style.background= '#232426';
+
+
+                    return button;
+                },
+                createTable : function(id, rows, columnPattern) {
+                    let table = document.createElement('table');
+                    table.border = '0px';
+                    table.id = id;
+                    let tableBody = document.createElement('tbody');
+                    for (let j = 0; j < rows; j++) {
+                        let row = document.createElement('tr');
+                        for (let i = 0; i < columnPattern[j]; i++) {
+                            let cell = document.createElement('td');
+                            if(columnPattern[j] === 1) {
+                                cell.colSpan  = 3;
+                            }
+                            row.appendChild(cell);
+                        }
+
+
+                        tableBody.appendChild(row);
+                    }
+                    table.appendChild(tableBody);
+                    return table;
+                },
+                setupHandlers : function() {
+                    document.querySelector('#firstTable').querySelector('#Submit').addEventListener('click',(e) => {
+                        let valid = Parser.validateFirst();
+                        if(valid === '') {
+                            let selectedTable = document.querySelector('#table').value;
+                            Controller([Sender.getSelectedTable(selectedTable),
+                                this.removeForm() ]);
+                        }
+                        else {
+                            alert(valid);
+                        }
+                    });
+                },
+                removeForm : function() {
+                    document.querySelector('#canvas_content').removeChild(document.querySelector('#canvas_form'));
+                }
+            };
+            let DrawTable = {
+                that : null,
+                left : 0,
+                top : 0,
+                size : 0,
+                cells : [],
+                letters : [],
+                solvedLetters : [],
+                definitionText : [],
+                definitionStartPos : {},
+                arrows : [],
+                submit : null,
+                activex : 0,
+                activey : 0,
+                activez : 0,
+                init : function() {
+                    let canvas = document.getElementById('canvas_content');
+                    let rect = canvas.getBoundingClientRect();
+                    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                    this.top = rect.top + scrollTop;
+                    this.left = (stage.width() < window.innerWidth) ?stage.width() *0.1 : 10;
+                    this.size =70;
+
+                    for(let y=0; y<15; y++) {
+                        this.solvedLetters[y] = [];
+                        for(let x=0 ;x<15; x++) {
+                            this.solvedLetters[y][x] = false;
+                        }
+                    }
+
+                    this.definitionStartPos['DOWN'] = [1,0];
+                    this.definitionStartPos[ 'LEFTDOWN'] =   [0,-1];
+                    this.definitionStartPos['RIGHTDOWN' ] =  [0,1];
+                    this.definitionStartPos['UPFORWARD'] = [-1,0];
+                    this.definitionStartPos['FORWARD'] = [0,1]
+                    this.definitionStartPos['DOWNFORWARD'] = [1,0];
+                },
+                pushTableImage : function(src) {
+                    dynamicImagesIds.push(src);
+                    dynamicImageSrcs.push(src);
+                    Parameters.pictureSrc = src;
+                },
+                loadImages : function(src) {
+                    imagesObj = new Object();
+                    let imgCounter = 0;
+                    let staticImageSrcs = ['/images/definition.png', '/images/definitionHalf.png', '/images/down0.png',
+                        '/images/down1.png', '/images/down2.png', '/images/forward0.png',  '/images/forward1.png',
+                        '/images/forward2.png', '/images/leftdown0.png',  '/images/leftdown1.png',
+                        '/images/leftdown2.png', '/images/rightdown0.png', '/images/rightdown1.png',
+                        '/images/rightdown2.png', '/images/upforward0.png', '/images/upforward1.png',
+                        '/images/upforward2.png', '/images/downforward0.png', '/images/downforward1.png',
+                        '/images/downforward2.png',	'/images/simplecell.png', '/images/solution.png'];
+                    let staticImagesId = [ 'definition', 'definitionHalf', 'DOWN0', 'DOWN1', 'DOWN2', 'FORWARD0', 'FORWARD1',
+                        'FORWARD2', 'LEFTDOWN0', 'LEFTDOWN1', 'LEFTDOWN2', 'RIGHTDOWN0', 'RIGHTDOWN1',
+                        'RIGHTDOWN2', 'UPFORWARD0', 'UPFORWARD1', 'UPFORWARD2',  'DOWNFORWARD0',
+                        'DOWNFORWARD1', 'DOWNFORWARD2', 'simplecell', 'solution'];
+
+                    let imagesId = dynamicImagesIds.concat(staticImagesId);
+                    let imageSrcs = dynamicImageSrcs.concat(staticImageSrcs);
+
+                    let images = [];
+                    for (let j = 0; j < imageSrcs.length; j++) {
+                        images[j] = document.createElement('img');
+                    }
+
+                    for (let i = 0; i < images.length; i++) {
+                        images[i].className = 'hidden';
+                        images[i].setAttribute('id', imagesId[i]);
+                        images[i].onload = function () {
+                            console.log('Image' + i + ' downloaded');
+                            imagesObj[imagesId[i]] = images[i];
+                            document.getElementById('canvas_content').appendChild(images[i]);
+                            if (++imgCounter == imageSrcs.length) {
+                                DrawTable.drawTable();
+                                DrawTable.drawPicture(Parameters.pictureSrc);
+
+
+                            }
+                        };
+                        images[i].src = imageSrcs[i];
+                    }
+                },
+
+                drawTable : function() {
+                    this.that = this;
+                    for(let y=0; y<Parameters.table.letters.length; y++) {
+                        this.letters[y] = [];
+                        this.cells[y] = [];
+                        this.definitionText[y] = [];
+                        this.arrows[y]= [];
+                        for(let x=0; x<15; x++) {
+                            this.cells[y][x] = [];
+                            this.letters[y][x] = [];
+                            this.definitionText[y][x] = [];
+                            this.arrows[y][x] = [];
+                            if(Parameters.definitions.definition[y][x] !==undefined &&
+                                Parameters.definitions.definition[y][x] !== null ) {
+                                let length = Parameters.definitions.definition[y][x].length;
+                                for(let z=0;z<length;z++) {
+                                    this.drawDefinition(y,x,z, length, this );
+                                }
+                            }
+                            else {
+                                this.drawCell(y,x, this);
+                            }
+                        }
+                    }
+
+                     this.setupHandlers();
+                },
+                drawPicture : function(src) {
+                    let picture  = new Konva.Image({
+                        x:  this.left,
+                        y:  this.top ,
+                        image : imagesObj[src],
+                        width : this.size *5,
+                        height: this.size *4
+                    });
+                    layer.add(picture);
+                    layer.draw();
+                },
+                drawDefinition : function(y,x,z, length, that) {
+                    if(that.cells[y][x][z] !== undefined) {
+                        layer.clear(that.left + x*that.size, that.top + 20 + y*that.size + (that.size/2) *z,
+                            that.size, that.size/length);
+                        that.cells[y][x][z].remove();
+                        that.cells[y][x][z] = null;
+                    }
+                    let cellDraw  = new Konva.Image({
+                        x:  that.left + x*that.size,
+                        y:  that.top + 20 + y*that.size + (that.size/2) *z ,
+                        image : (length===1) ? imagesObj['definition'] : imagesObj['definitionHalf'],
+                        width : that.size,
+                        height: that.size/length
+                    });
+                    cellDraw.type = 'definition';
+                    cellDraw.posy = y;
+                    cellDraw.posx = x;
+                    cellDraw.posz = z;
+                    let currentDirection = Parameters.definitions.definition[y][x][z].direction;
+                    cellDraw.startY = y + that.definitionStartPos[currentDirection][0];
+                    cellDraw.startX = x + that.definitionStartPos[currentDirection][1];
+                    cellDraw.addToY = ( currentDirection === 'RIGHTDOWN' || currentDirection === 'DOWN' || currentDirection === 'LEFTDOWN' ) ?
+                                    1 : 0;
+                    cellDraw.addToX = (cellDraw.addToY === 1) ? 0 : 1;
+
+                    that.cells[y][x][z] = cellDraw;
+                    layer.add(that.cells[y][x][z]);
+                    layer.draw();
+
+                    if(that.definitionText[y][x][z] !== undefined ) {
+                        that.definitionText[y][x][z].remove();
+                        that.definitionText[y][x][z] = null;
+                    }
+                    let definitionText = new Konva.Text({
+                        x: that.left + x*that.size ,
+                        y:  that.top + 20 + y*that.size + that.size*0.4 -
+                            that.size *  (Parameters.definitions.definition[y][x][z].clue.split(/\r\n|\r|\n/).length) *0.1,
+                        text: Parameters.definitions.definition[y][x][z].clue,
+                        lineHeight : 1.2,
+                        fontSize: 15 -  3 * (length -1) ,
+                        fontFamily: 'Calibri' ,
+                        fontStyle : 'oblique',
+                        fill: 'black'
+                    });
+                    that.definitionText[y][x][z] = definitionText;
+                    layer.add(that.definitionText[y][x][z]);
+                    layer.draw();
+
+                },
+                drawCell : function(y,x, that) {
+
+                    if(that.cells[y][x][0] !== undefined) {
+                        layer.clear(that.left + x*that.size, that.top + 20 + y*that.size,
+                            that.size, that.size/length);
+                        that.cells[y][x][0].remove();
+                        that.cells[y][x][0] = null;
+                    }
+                    let cellDraw  = new Konva.Image({
+                        x:  that.left + x*that.size,
+                        y:  that.top + 20 + y*that.size ,
+                        image : (Parameters.table.solutions[y][x] === true) ? imagesObj['solution'] : imagesObj['simplecell'],
+                        width : that.size,
+                        height: that.size
+                    });
+                    that.cells[y][x][0] = cellDraw;
+                    layer.add(that.cells[y][x][0]);
+                    layer.draw();
+
+                    if(Parameters.table.arrows[y][x].length > 0) {
+                        for (let z = 0; z < Parameters.table.arrows[y][x].length; z++) {
+
+                            if (that.arrows[y][x][z] !== undefined) {
+                                that.arrows[y][x][z].remove();
+                                that.arrows[y][x][z] = null;
+                            }
+                            let arrowPic = new Konva.Image({
+                                x: that.left + x * that.size,
+                                y: that.top + 20 + y * that.size,
+                                image: imagesObj[Parameters.table.arrows[y][x][z].arrow + Parameters.table.arrows[y][x][z].index],
+                                width: that.size,
+                                height: that.size
+                            });
+                            that.arrows[y][x][z] = arrowPic;
+                            layer.add(that.arrows[y][x][z]);
+                        }
+                        layer.draw();
+                    }
+                    if(Parameters.table.letters[y][x] !== null) {
+                        if(that.letters[y][x] !== null) {
+                            that.letters[y][x] = null;
+                        }
+                        let letterPic  = new Konva.Text({
+                            x: that.left + x*that.size + that.size*0.3,
+                            y:  that.top + 20 + y*that.size + that.size * 0.3,
+                            text: that.solvedLetters[y][x] ?   Parameters.table.letters[y][x] : '',
+                            fontSize: 34 ,
+                            fontFamily: 'Calibri' ,
+                            fill: 'black'
+                        });
+                        that.letters[y][x] = letterPic;
+                        layer.add(that.letters[y][x]);
+                        layer.draw();
+                    }
+
+                },
+                drawSolution : function(solution, that) {
+                    let currentCell = that.cells[DrawTable.activey][DrawTable.activex][DrawTable.activez];
+                    let y = currentCell.startY;
+                    let x = currentCell.startX;
+                    let addToY = currentCell.addToY;
+                    let addToX = currentCell.addToX;
+
+
+                    for(let i=0; i<solution.length; i++) {
+                        that.solvedLetters[y][x] = true;
+                        that.drawCell(y,x,that);
+                        x += addToX;
+                        y += addToY;
+                    }
+                },
+                setupHandlers : function() {
+                    for(let y=0; y<15; y++) {
+                        for(let x=0; x<15; x++) {
+                            for(let z=0; z<this.cells[y][x].length; z++) {
+                                if(this.cells[y][x][z].type === 'definition') {
+                                    this.cells[y][x][z].on( 'click' , (e) => Controller([this.disableHandlers(false),
+                                        this.writeSolution(e)] ));
+                                }
+                            }
+
+                        }
+                    }
+                },
+                writeSolution : function (e) {
+                    this.activey = e.target.posy;
+                    this.activex = e.target.posx;
+                    this.activez = e.target.posz;
+                    let input = document.createElement('input');
+                    input.setAttribute('type', 'text');
+                    input.id = 'defedit';
+                    input.maxLength = 20;
+                    input.style.width = 220  + 'px';
+                    input.style.height = 40  + 'px';
+                    input.style.paddingLeft = 6 + 'px';
+                    input.style.background =  '#d4d0c5';
+                    input.style.border = 'solid 4px';
+                    input.style.fontSize = 14 + 'px';
+                    input.style.color = 'black';
+                    input.style.lineHeight = '.36em';
+                    input.style.outline = 'none';
+                    input.style.position = 'absolute';
+                    input.style.top = e.target.y() + this.top + 'px';
+                    input.style.left = e.target.x() + 'px';
+
+                    document.querySelector('#canvas_content').appendChild(input);
+                    window.addEventListener(
+                        'keydown', this.readLetter, false	);
+                },
+                readLetter : function(e) {
+                    let c = e.key;
+                    if(c==='Enter') {
+                        let solution = document.querySelector('#defedit').value;
+                        let def =  Parameters.definitions.definition[DrawTable.activey][DrawTable.activex][DrawTable.activez];
+                        if(def.word === solution) {
+                            DrawTable.drawSolution(solution, DrawTable.that);
+                        }
+                        else {
+                            alert('NOT FOUND!');
+                        }
+
+                        document.querySelector('#canvas_content').removeChild(document.querySelector('#defedit'));
+                        DrawTable.setupHandlers();
+                        window.removeEventListener('keydown', DrawTable.readLetter);
+                    }
+                    else if(c==='Escape') {
+                        window.removeEventListener('keydown', DrawTable.readLetter);
+                        document.querySelector('#canvas_content').removeChild(document.querySelector('#defedit'));
+                        DrawTable.setupHandlers();
+                        window.removeEventListener('keydown', DrawTable.readLetter);
+                    }
+                },
+                disableHandlers : function() {
+                    for(let y=0; y<15; y++) {
+                        for(let x=0; x<15; x++) {
+                            for(let z=0; z<this.cells[y][x].length; z++) {
+                                if(this.cells[y][x][z].type === 'definition') {
+                                    this.cells[y][x][z].off( 'click'  )
+                                }
+                            }
+
+                        }
+                    }
+                },
+            };
+            let Parser = {
+                validateFirst : function() {
+                    return '';
+                },
+                parseSelects : function(response) {
+                    let selects = JSON.parse(response);
+                    	for(let i=0; i<selects.length; i++) {
+                            Selects.ids.push(selects[i].id);
+                    	    Selects.names.push(selects[i].name);
+                         }
+                },
+                parseSelected : function(response) {
+                    let jsonResponse = JSON.parse(response);
+                    let tempObj = JSON.parse(jsonResponse.jsonTable);
+                    let tempDefs = JSON.parse(JSON.stringify(tempObj.definitions));
+                    Parameters.table.letters = JSON.parse(JSON.stringify(tempObj.table)).letters;
+                    Parameters.table.solutions = JSON.parse(JSON.stringify(tempObj.table)).solutions;
+                    Parameters.table.arrows = JSON.parse(JSON.stringify(tempObj.table)).arrows;
+                    Parameters.pictureSrc = JSON.parse(JSON.stringify(tempObj)).pictureSrc;
+                    Parameters.definitions.definition = tempDefs.definition;
+                }
+            };
+            let Sender = {
+                sendListTables : function() {
+                    let xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                              Controller([Parser.parseSelects(this.responseText), CreateSelectTable.init()]) ;
+                        }
+                    };
+                    xhttp.open('GET', 'http://localhost/scandiselecttable/', true);
+                    xhttp.send();
+                },
+                getSelectedTable : function(id) {
+                    let xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                            Controller([Parser.parseSelected(this.responseText),
+                                        DrawTable.pushTableImage(Parameters.pictureSrc),
+                                        DrawTable.init(),DrawTable.loadImages()]);
+
+                        }
+                    };
+                    xhttp.open('POST', 'http://localhost/scandigetselectedtable/', true);
+                    xhttp.send(id );
+                }
+            };
+            SelectTable.init();
+        }());

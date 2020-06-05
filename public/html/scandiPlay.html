@@ -1,0 +1,627 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<head>
+    <style>
+        #hidden { visibility: hidden; }
+        .hidden { visibility: hidden; }
+        input, select, textarea {
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        input {
+            width: calc(100% - 10px);
+            padding: 5px;
+            background-color: '#faf5c8';
+        }
+    </style>
+</head>
+<body>
+<h3>Task Builder</h3><br /><br />
+
+<div id="canvas_content" style="max-height: 1800px;max-width:1800px;
+					margin-right: auto; margin-left: auto; overflow: scroll;">
+    <canvas id="canvas" width="1050" height="1400" >
+
+    </canvas>
+</div>
+
+<script src="https://unpkg.com/konva@4.0.0/konva.js"></script>
+
+<script >
+    window.onload=
+        function() {
+            let layer = null;
+            let stage = null;
+            let LoadGame = {
+                init : function() {
+                    console.log('Init fut');
+                    stage = new Konva.Stage({
+                        container: 'canvas_content',
+                        width: window.innerWidth *0.8,
+                        height: window.innerHeight *1.2
+                    })
+                    layer = new Konva.Layer();
+                    stage.add(layer);
+                    Sender.getTableSelection();
+                }
+            }
+            let Parameters = {
+                letters : [],
+                words : [],
+                word : {
+                    word : '',
+                    y : 0,
+                    x : 0,
+                    length : 0,
+                    reverse : false,
+                }
+            }
+            let Selects = {
+                ids : [],
+                names : []
+            };
+            let Controller = (funcs) => {
+
+            }
+            let CreateSelectTable = {
+                init : function() {
+                    let canvas = document.getElementById('canvas_content');
+                    let rect = canvas.getBoundingClientRect();
+                    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                    let outerDiv = document.createElement('div');
+                    outerDiv.setAttribute('id','canvas_form');
+                    outerDiv.style.position = 'absolute';
+                    outerDiv.style.left = (rect.left +stage.width()/8 ) +'px';
+                    outerDiv.style.top =  (rect.top + scrollTop + stage.height() /6 )  + 'px';
+                    outerDiv.style.overflow = 'sroll';
+
+                    let innerDiv = document.createElement('div');
+                    innerDiv.id = 'innerDiv';
+                    innerDiv.style.position = 'relative';
+                    innerDiv.style.width = 480 + 'px';
+                    innerDiv.style.height = 300 + 'px';
+                    innerDiv.style.margin = '7% auto';
+                    innerDiv.style.border = 'tan solid 12px';
+                    innerDiv.style.borderTop = '#bda27e solid 12px';
+                    innerDiv.style.borderLeft = '#b19876 solid 12px';
+                    innerDiv.style.borderBottom = '#c9ad86 solid 12px';
+                    innerDiv.style.boxShadow = '0px 0px 6px 5px rgba(58, 18, 13, 0), 0px 0px 0px 2px #c2a782, 0px 0px 0px 4px #a58e6f, 3px 4px 8px 5px rgba(0, 0, 0, 0.5)';
+                    innerDiv.style.backgroundImage = 'radial-gradient( circle at left 30%, rgba(34, 34, 34, 0.3), rgba(34, 34, 34, 0.3) 80px, rgba(34, 34, 34, 0.5) 100px, rgba(51, 51, 51, 0.5) 160px, rgba(51, 51, 51, 0.5)), linear-gradient( 215deg, transparent, transparent 100px, #222 260px, #222 320px, transparent), radial-gradient( circle at right, #111, rgba(51, 51, 51, 1))';
+                    innerDiv.style.backgroundColor = '#607a87';
+
+                    let form = document.createElement('form');
+                    form.setAttribute('id',  'scandiForm');
+                    form.setAttribute('method','post');
+                    form.setAttribute('action','');
+                    form.style.padding = 'padding: 70px 20px 20px';
+
+                    let submitButton = this.createButton( 'Submit', 'Submit');
+                    let table = this.createTable('firstTable',3,[1,2,2]);
+                    let selectLabel = this.createStyledLabel('Select a table from the list ','selectLabel');
+                    let tableLabel = this.createStyledLabel('Tables:  ','table');
+                    let tables = this.createStyledSelect('table',Selects.ids, Selects.names);
+
+                    form.appendChild(selectLabel);
+                    form.appendChild(tableLabel);
+                    form.appendChild(tables);
+                    form.appendChild(submitButton);
+
+                    innerDiv.appendChild(form);
+                    innerDiv.appendChild(table);
+                    outerDiv.appendChild(innerDiv);
+                    document.getElementById('canvas_content').appendChild(outerDiv);
+
+                    document.getElementById('firstTable').rows[0].cells[0].appendChild(selectLabel);
+                    document.getElementById('firstTable').rows[1].cells[0].appendChild(tableLabel);
+                    document.getElementById('firstTable').rows[1].cells[1].appendChild(tables);
+                    document.getElementById('firstTable').rows[2].cells[1].appendChild(submitButton);
+
+                    this.setupHandlers();
+
+                },
+                createStyledLabel : function(text,id) {
+                    let label = document.createElement('Label');
+                    label.innerHTML = text;
+                    label.for = id;
+                    label.style.marginLeft = 8 + 'px';
+                    label.style.verticalAlign = 'middle';
+                    label.style.textAlign = 'left';
+                    label.style.fontFamily = '\'Permanent Marker\', cursive';
+                    label.style.fontSize = 18 + 'px';
+                    label.style.color = 'rgba(238, 238, 238, 0.7)';
+
+                    return label;
+                },
+                createStyledSelect : function(id, values,options) {
+                    let select = document.createElement('select');
+                    select.id = id;
+                    select.style.marginLeft = 22 + 'px';
+                    select.style.marginTop = 6 + 'px';
+                    select.style.fontFamily = '\'Permanent Marker\', cursive';
+                    select.style.background =  '#1c1818';
+                    select.style.color = '#cad7de';
+                    for (let i = 0; i < options.length; i++) {
+                        let option = document.createElement('option');
+                        option.value = values[i];
+                        option.text = options[i];
+                        option.style.padding = 6 + 'px';
+                        select.appendChild(option);
+                    }
+
+                    return select;
+                },
+                createButton : function(id, text) {
+                    let button = document.createElement('input');
+                    button.type = 'submit';
+                    button.id = id;
+                    button.value = text;
+                    button.classList.add('wordSearchButton');
+                    button.style.margin = 12 + 'px';
+                    button.style.color = '#996633';
+                    button.style.textShadow = '0px 1px 0px rgba(255,255,255,.4)';
+                    button.style.background= '#232426';
+
+
+                    return button;
+                },
+                createTable : function(id, rows, columnPattern) {
+                    let table = document.createElement('table');
+                    table.border = '0px';
+                    table.id = id;
+                    let tableBody = document.createElement('tbody');
+                    for (let j = 0; j < rows; j++) {
+                        let row = document.createElement('tr');
+                        for (let i = 0; i < columnPattern[j]; i++) {
+                            let cell = document.createElement('td');
+                            if(columnPattern[j] === 1) {
+                                cell.colSpan  = 3;
+                            }
+                            row.appendChild(cell);
+                        }
+
+
+                        tableBody.appendChild(row);
+                    }
+                    table.appendChild(tableBody);
+                    return table;
+                },
+                setupHandlers : function() {
+                    document.querySelector('#firstTable').querySelector('#Submit').addEventListener('click',(e) => {
+                        let selectedTable = document.querySelector('#table').value;
+                        Controller([Sender.getSelectedTable(selectedTable),
+                            this.removeForm() ]);
+
+                    });
+                },
+                removeForm : function() {
+                    document.querySelector('#canvas_content').removeChild(document.querySelector('#canvas_form'));
+                }
+            };
+            let DrawGame = {
+                size : 40,
+                leftOffset : 0,
+                left : 0,
+                top  : 0,
+                topOffset : 60,
+                right : 0,
+                cells : [],
+                letters : [],
+                scoreLabel : null,
+                soreText : null,
+                wordLabel : null,
+                foundWords : [] ,
+                init : function() {
+                    this.leftOffset = 0.4 - Parameters.letters[0].length * 0.03;
+                    this.left = stage.width() * this.leftOffset ;
+                    let canvas = document.getElementById('canvas_content');
+                    let rect = canvas.getBoundingClientRect();
+                    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    this.top = rect.top + scrollTop + this.topOffset;
+                    this.right = this.left + Parameters.letters[0].length * this.size + 15;
+                    console.log('Right: ' + this.right);
+                },
+                initTable : function() {
+                    for(let y=0; y<Parameters.letters.length; y++) {
+                        this.cells[y] = new Array();
+                        this.letters[y] = new Array();
+                        for(let x=0; x<Parameters.letters[0].length; x++) {
+                            this.cells[y][x] = null;
+                            this.letters[y][x] = null;
+                        }
+                    }
+                },
+                drawBackGround : function() {
+                    let backGround = new Konva.Rect({
+                        x:  stage.x(),
+                        y:  stage.y(),
+                        width: stage.width(),
+                        height: stage.height(),
+                        fill:   '#0f2b26',
+                        stroke:  'black',
+                        strokeWidth:   2
+                    });
+                    layer.add(backGround);
+                    layer.draw();
+                },
+                drawScore : function(old, recent) {
+                    if(this.scoreLabel !== null) {
+                        this.scoreLabel.remove();
+                        this.scoreLabel = null;
+                    }
+                    let scoreLabel = new Konva.Text({
+                        x: this.left ,
+                        y: this.top - 35,
+                        text : 'S C O R E -> ',
+                        fontSize : this.size*0.75,
+                        fontStyle : 'bold',
+                        fontFamily: 'Calibri' ,
+                        fill: '#a66c02'
+                    });
+                    layer.add(scoreLabel);
+                    layer.draw();
+
+                    let i=old;
+                    if(this.soreText !== null) {
+                        this.soreText.remove();
+                        this.soreText = null;
+                    }
+                    this.soreText = new Konva.Text({
+                        x: this.left  + scoreLabel.width() +10,
+                        y: this.top - 35,
+                        text : '' + i,
+                        fontSize : this.size*0.65,
+                        fontFamily: 'Calibri' ,
+                        fill:  '#d6941a'
+                    });
+                    layer.add(this.soreText);
+                    layer.draw();
+
+                    let anim = new Konva.Animation(function(frame) {
+                        i += 4;
+                        if(i > recent) {
+                            i=recent;
+                        }
+                        if(i == recent) {
+                            anim.stop();
+                        }
+
+                        DrawGame.soreText.visible(false);
+                        DrawGame.soreText.setText('' + i) ;
+                        DrawGame.soreText.visible(true);
+
+
+                    }, layer);
+
+                    anim.start();
+                },
+                drawFoundWords : function() {
+                    if(this.wordLabel !== null) {
+                        this.wordLabel.remove();
+                        this.wordLabel = null;
+                    }
+                    this.wordLabel = new Konva.Text({
+                        x: this.right ,
+                        y: this.top + 15,
+                        text : 'F O U N D E D   W O R D S ',
+                        fontSize : this.size*0.55,
+                        fontStyle : 'bold',
+                        fontFamily: 'Calibri' ,
+                        fill: '#78330d'
+                    });
+                    layer.add(this.wordLabel);
+                    layer.draw();
+                    for(let i=0; i<GamePlay.foundWords.length; i++) {
+                        if(i<this.foundWords.length) {
+                            this.foundWords[i].remove();
+                            this.foundWords[i] = null;
+                        }
+                        this.foundWords[i] = new Konva.Text({
+                            x: this.right + 10 ,
+                            y: this.top + 15 + i *20 + 22,
+                            text : GamePlay.foundWords[i] ,
+                            fontSize : 16,
+                            fontFamily: 'Calibri' ,
+                            fill: '#662908'
+                        });
+                        layer.add(this.foundWords[i]);
+                    }
+                    layer.draw();
+                },
+                drawHit : function(word) {
+
+                },
+                drawTable : function() {
+                    layer.clear();
+                    for(let y=0; y<Parameters.letters.length; y++) {
+                        for(let x=0; x<Parameters.letters[0].length; x++) {
+                            if(Parameters.letters[y][x] !=='~') {
+                                this.drawCell(this, y, x, false);
+                            }
+                        }
+                    }
+                    layer.draw();
+                    for(let y=0; y<Parameters.letters.length; y++) {
+                        for(let x=0; x<Parameters.letters[0].length; x++) {
+                            if(Parameters.letters[y][x] !=='~') {
+                                this.drawLetter(this, y, x, false);
+                            }
+                        }
+                    }
+                    layer.draw();
+                    return this;
+
+                },
+                drawCell : function(that, y, x, marked) {
+                    if(that.cells[y][x] !== null) {
+                        layer.clear(that.left + x * that.size, that.top + y*that.size, that.size, that.size);
+                        that.cells[y][x].remove();
+                        that.cells[y][x] = null;
+
+                    }
+
+                    that.cells[y][x] = new Konva.Rect({
+                        x: that.left + x * that.size +5,
+                        y: that.top + y * that.size + 5,
+                        width: that.size,
+                        height: that.size,
+                        fill:   '#f2f0f5',
+                        stroke:  'black',
+                        strokeWidth:   2
+                    });
+                    that.cells[y][x].posY = y;
+                    that.cells[y][x].posX = x;
+                    layer.add(that.cells[y][x]);
+
+                },
+                drawLetter : function(that, y, x, marked) {
+                    if(that.letters[y][x] !== null) {
+                        that.letters[y][x].remove();
+                        that.letters[y][x] = null;
+
+                    }
+                    that.letters[y][x] = new Konva.Text({
+                        x: that.left + x * that.size +5 + that.size *0.25,
+                        y: that.top + y * that.size + 5 + that.size *0.25,
+                        text : Parameters.letters[y][x],
+                        fontSize : that.size*0.65,
+                        fontFamily: 'Calibri' ,
+                        fill:  marked ? '#fa4f1b' : 'black'
+                    });
+                    that.letters[y][x].posY = y;
+                    that.letters[y][x].posX = x;
+                    layer.add(that.letters[y][x]);
+                },
+            }
+            let Handler = {
+                startX  :0,
+                startY : 0,
+                nowX : 0,
+                nowY : 0,
+                selectedLetters : [],
+                isMouseDown :false,
+                reDraw : false,
+                initHandlers : function(that) {
+
+                    for(let y=0; y<Parameters.letters.length; y++) {
+                        for(let x=0; x<Parameters.letters[0].length; x++) {
+                            if(DrawGame.cells[y][x] === null) {
+                                continue;
+                            }
+                            DrawGame.cells[y][x].on('mousedown', (e) =>
+                                this.handleMouseDown(e, DrawGame.cells[y][x] ) );
+                            DrawGame.letters[y][x].on('mousedown', (e) =>
+                                this.handleMouseDown(e, DrawGame.letters[y][x], that ) );
+                            DrawGame.cells[y][x].on('mousemove', (e) =>
+                                this.handleMouseMove(e, DrawGame.cells[y][x], that ) );
+                            DrawGame.cells[y][x].on('mouseup', (e) =>
+                                this.handleMouseUp(e, DrawGame.cells[y][x], that ) );
+                            DrawGame.letters[y][x].on('mouseup', (e) =>
+                                this.handleMouseUp(e, DrawGame.letters[y][x], that ) );
+
+                        }
+                    }
+
+                },
+                handleMouseDown : function(e) {
+                    console.log('MouseDown');
+                    if(!this.isMouseDown) {
+                        this.isMouseDown = true;
+                        this.startY = e.target.posY;
+                        this.startX = e.target.posX;
+                    }
+                },
+                handleMouseUp : function(e, that) {
+                    console.log('MouseUp: ' + this.isMouseDown);
+                    if( this.isMouseDown) {
+                        this.isMouseDown = false;
+                        Controller([ this.initHandlers(DrawGame.drawTable()) ]);
+                        this.checkIfWordFound();
+                    }
+                },
+                handleMouseMove : function(e, cell, that) {
+                    if(!this.isMouseDown) {
+                        return false;
+                    }
+                    this.nowY = e.target.posY;
+                    this.nowX = e.target.posX;
+                    this.isThereValidSelect(that);
+
+                },
+                isThereValidSelect : function(that) {
+                    let deltaY = this.nowY - this.startY;
+                    let stepY = deltaY!==0 ? (deltaY / Math.abs(deltaY)) : 0 ;
+                    let deltaX = this.nowX - this.startX;
+                    let stepX = deltaX!==0 ? (deltaX / Math.abs(deltaX)) : 0 ;
+
+                    let index=1;
+                    let currentY = 0;
+                    let currentX = 0;
+                    let lastSelectedLetters = [];
+                    let currentSelectedLetters = [];
+                    let selectedPositions = [];
+                    currentSelectedLetters[0] = that.letters[this.startY][this.startX].text();
+                    selectedPositions[0] = new Object();
+                    selectedPositions[0].y = this.startY;
+                    selectedPositions[0].x = this.startX;
+                    let validSelect = true;
+
+                    while(deltaX!==0 || deltaY!==0) {
+                        currentY = this.startY+index*stepY;
+                        if( currentY< 0 || currentY > Parameters.letters.length-1 ) {
+                            validSelect = false;
+                            break;
+                        }
+                        currentX = this.startX + index*stepX;
+                        if( currentX< 0 || currentX > Parameters.letters[0].length-1 ) {
+                            validSelect = false;
+                            break;
+                        }
+
+                        currentSelectedLetters[index] = that.letters[currentY][currentX].text();
+                        selectedPositions[index] = new Object();
+                        selectedPositions[index].y = currentY;
+                        selectedPositions[index].x = currentX;
+                        index++;
+                        deltaX-=stepX;
+                        deltaY-=stepY;
+                    }
+
+                    if(validSelect) {
+                        console.log('Valid select: ' + currentSelectedLetters.join('') );
+                        if(currentSelectedLetters.join('') !== this.selectedLetters.join('')) {
+                            Controller([DrawGame.drawTable() ]);
+                            for(let i=0; i< currentSelectedLetters.length; i++) {
+                                DrawGame.drawCell( that, selectedPositions[i].y,
+                                    selectedPositions[i].x, false );
+                            }
+                            layer.draw();
+                            for(let i=0; i< currentSelectedLetters.length; i++) {
+                                DrawGame.drawLetter(that,selectedPositions[i].y,
+                                    selectedPositions[i].x, true );
+                            }
+                            layer.draw();
+                            this.selectedLetters = currentSelectedLetters;
+                            this.initHandlers(that);
+                        }
+                        this.reDraw = true;
+                    }
+                    else {
+                        if(this.reDraw) {
+                            this.reDraw = false;
+                            Controller([DrawGame.drawTable(), this.initHandlers(that) ]);
+                        }
+                    }
+                },
+                checkIfWordFound : function() {
+                    word = this.selectedLetters.join('');
+                    reverseWord = this.selectedLetters.reverse().join('');
+                    console.log('W: ' + word + '    RW: ' + reverseWord);
+                    for(let i=0; i<Parameters.words.length; i++) {
+                        if(Parameters.words[i].word === word ||
+                            Parameters.words[i].word === reverseWord		) {
+                            console.log('Word found');
+                            if(!GamePlay.foundWords.includes(Parameters.words[i].word)) {
+                                GamePlay.foundWords.push(Parameters.words[i].word);
+                                GamePlay.score += 100;
+                                console.log('New Word');
+                            }
+
+                        }
+                    }
+                }
+            }
+            let GamePlay = {
+                score : 0,
+                oldCore = 0,
+                foundWords : [],
+                intervalID : null,
+                start : function() {
+                    DrawGame.drawScore(0,0);
+                    this.intervalID = setInterval((e) => Controller([DrawGame.drawFoundWords(),
+                        DrawGame.drawScore(this.oldCore, this.score), this.play()] ),  200);
+                },
+                play : function() {
+                    this.oldCore = this.score;
+                },
+                sleep : function(ms) {
+                    return new Promise(resolve => setTimeout(resolve, ms));
+                }
+            }
+            let Parser = {
+                parseSelects : function(response) {
+                    let selects = JSON.parse(response);
+                    for(let i=0; i<selects.length; i++) {
+                        Selects.ids.push(selects[i].id);
+                        Selects.names.push(selects[i].name);
+                    }
+                },
+                parseData : function(response) {
+
+                    let temp = JSON.stringify(JSON.parse(response).jsonTable);
+                    let temp1 = JSON.stringify(JSON.parse(JSON.parse(temp)).tableParams)
+                    let templetters = JSON.stringify(JSON.parse(temp1).letters);
+                    let tempTable = JSON.parse(temp1)
+                    console.log('Tableee:  ' + tempTable.words.length)
+
+
+                    for(let y=0; y<tempTable.letters.length; y++) {
+                        Parameters.letters[y] = new Array();
+                        for(let x=0; x<tempTable.letters[0].length; x++) {
+                            Parameters.letters[y][x] = tempTable.letters[y][x];
+                        }
+                    }
+                    for(let y=0; y<tempTable.words.length; y++) {
+                        console.log('Letter:  ' + y + '  ' + tempTable.words[y].word )
+                        Parameters.words[y] = tempTable.words[y];
+                    }
+                    Controller([DrawGame.init(), DrawGame.initTable(),
+                        DrawGame.drawBackGround(),
+                        Handler.initHandlers(DrawGame.drawTable()),
+                        GamePlay.start()]);
+                }
+            }
+            let Sender = {
+                getTableSelection : function() {
+                    let xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                            console.log(this.responseText);
+                            if(this.responseText === '[]') {
+                                alert('No table found');
+                            }
+                            else {
+                                Controller([Parser.parseSelects(this.responseText), CreateSelectTable.init()]);
+                            }
+                        }
+                    }
+                    xhttp.open('GET', 'http://localhost/wordselecttable/', true);
+                    xhttp.send();
+                },
+                getSelectedTable : function(id) {
+                    let xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                            console.log(this.responseText);
+                            Parser.parseData(this.responseText);
+                        }
+                    };
+                    console.log('Id: ' + id);
+                    xhttp.open('POST', 'http://localhost/wordgetselectedtable/', true);
+                    xhttp.send(id);
+                }
+            }
+            LoadGame.init();
+        }();
+
+</script>
+</body>
+</html>
+
+

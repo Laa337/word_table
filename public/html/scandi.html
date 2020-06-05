@@ -1,0 +1,720 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core">
+<head>	
+	<style>
+		.hidden { visibility: hidden; }
+		input, select, textarea {
+     		 margin-bottom: 10px;
+      		 border: 1px solid #ccc;
+    	     border-radius: 3px;
+     	 }
+     	 input {
+      		width: calc(100% - 10px);
+    		padding: 5px;
+    		background-color: '#faf5c8';
+     	 }
+	</style>
+</head>
+<body>
+	<h3>Task Builder</h3><br /><br />
+	
+	<div id="canvas_content" style="max-height: 1800px;max-width:1800px;
+					margin-right: auto; margin-left: auto; overflow: scroll;">
+		<canvas id="canvas" width="1050" height="1400" >
+	
+		</canvas>
+	</div>
+	
+	<script src="https://unpkg.com/konva@4.0.0/konva.js"></script>
+		
+	<script >
+window.onload=	
+	function() {
+ 		let layer = null;
+		let stage = null;
+		let  imagesObj = {};
+		let dynamicImageSrcs = [];
+		let dynamicImagesIds = [];
+	 	let CreateFirstRequest = {
+	 		stage : null,
+	 		layer : null,
+	 		init : function() {
+	 			console.log('init fut');
+	 			stage = new Konva.Stage({
+					container: 'canvas_content',
+			        width: window.innerWidth *1.4,
+			        height: window.innerHeight *1.4
+			    });
+	 			layer = new Konva.Layer();
+	 			stage.add(layer);
+	 			Controller( [SetupFirstRequest.init(), SetupFirstRequest.setupHandlers()  ]);
+	 		}
+	 	};
+		let Controller = (funcs) => {
+	 		
+	 	};
+	 	let Parameters = {
+	 		table : {
+	 			letters : [],
+	 			solutions : [],
+				arrows : []
+	 		},
+	 		definitions : {
+	 			definition : []
+	 		},
+			pictureSrc : null
+
+	 	};
+	 	let firstSendParameters = {
+	 		topic : '',
+			solution : '',
+			picture : ''
+		};
+	 	let SetupFirstRequest = {
+	 		
+	 		init : function() {
+	 			let canvas = document.getElementById('canvas_content');
+				let rect = canvas.getBoundingClientRect();
+			    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+				   
+				let outerDiv = document.createElement('div');
+				outerDiv.setAttribute('id','canvas_form');
+				outerDiv.style.position = 'absolute';
+				outerDiv.style.left = (rect.left +stage.width()/8 ) +'px';
+				outerDiv.style.top =  (rect.top + scrollTop + stage.height() /6 )  + 'px';
+				outerDiv.style.overflow = 'sroll';
+				   
+				let innerDiv = document.createElement('div');
+				innerDiv.id = 'innerDiv';
+				innerDiv.style.position = 'relative';
+				innerDiv.style.width = 480 + 'px';
+				innerDiv.style.height = 300 + 'px';
+			    innerDiv.style.margin = '7% auto';
+				innerDiv.style.border = 'tan solid 12px';
+				innerDiv.style.borderTop = '#bda27e solid 12px';
+				innerDiv.style.borderLeft = '#b19876 solid 12px';
+				innerDiv.style.borderBottom = '#c9ad86 solid 12px';
+				innerDiv.style.boxShadow = '0px 0px 6px 5px rgba(58, 18, 13, 0), 0px 0px 0px 2px #c2a782, 0px 0px 0px 4px #a58e6f, 3px 4px 8px 5px rgba(0, 0, 0, 0.5)';
+				innerDiv.style.backgroundImage = 'radial-gradient( circle at left 30%, rgba(34, 34, 34, 0.3), rgba(34, 34, 34, 0.3) 80px, rgba(34, 34, 34, 0.5) 100px, rgba(51, 51, 51, 0.5) 160px, rgba(51, 51, 51, 0.5)), linear-gradient( 215deg, transparent, transparent 100px, #222 260px, #222 320px, transparent), radial-gradient( circle at right, #111, rgba(51, 51, 51, 1))';
+				innerDiv.style.backgroundColor = '#607a87';
+				
+				let form = document.createElement('form');
+				form.setAttribute('id',  'scandiForm');
+				form.setAttribute('method','post');
+				form.setAttribute('action','');
+				form.style.padding = 'padding: 70px 20px 20px';
+				
+				let submitButton = this.createButton( 'Submit', 'Submit');
+				let table = this.createTable('firstTable',4,[2,2,2,2]);
+				let solutionLabel = this.createStyledLabel('Solution','solution');
+				let solution = this.createStyledInput('solution','text', 300);
+				let topicLabel = this.createStyledLabel('Topic','topic');
+			    let topic = this.createStyledSelect('topic',['MagyarAngol','MagyarFrancia','MagyarNémet']);
+			    let pictureLabel = this.createStyledLabel('Picture','picture');
+				let picture = this.createFileChooser('picture');
+				
+				form.appendChild(solutionLabel);
+				form.appendChild(solution);
+				form.appendChild(topicLabel);
+				form.appendChild(topic);
+				form.appendChild(pictureLabel);
+				form.appendChild(picture);
+				form.appendChild(submitButton);
+				innerDiv.appendChild(form)
+				innerDiv.appendChild(table);
+				outerDiv.appendChild(innerDiv);
+				document.getElementById('canvas_content').appendChild(outerDiv);
+				
+				document.getElementById('firstTable').rows[0].cells[0].appendChild(solutionLabel);
+				document.getElementById('firstTable').rows[0].cells[1].appendChild(solution);
+				document.getElementById('firstTable').rows[1].cells[0].appendChild(topicLabel);
+				document.getElementById('firstTable').rows[1].cells[1].appendChild(topic);
+				document.getElementById('firstTable').rows[2].cells[0].appendChild(pictureLabel);
+			    document.getElementById('firstTable').rows[2].cells[1].appendChild(picture);
+				document.getElementById('firstTable').rows[3].cells[1].appendChild(submitButton);
+				
+				
+				
+	 		},
+	 		createStyledInput : function(id, type, width, min,max) {
+			   let input = document.createElement('input'); 
+			   input.setAttribute('type',type);
+			   input.id = id;
+			   if(type === 'number') {
+				   console.log('Number type');
+				   input.min = min;
+				   input.max = max;
+				   input.value = min;
+				}
+				input.style.width = stage.width() / 3 + 'px';
+				input.maxLength = 10;
+				input.style.width = width +  'px';
+				input.style.verticalAlign = 'middle';
+				input.style.paddingLeft = 6 + 'px';
+				input.style.marginTop = 8 + 'px';
+				input.style.marginLeft = 8 + 'px';
+				input.style.background =  '#1c1818';
+				input.style.border = 'none';
+				input.style.fontFamily = '\'Permanent Marker\', cursive';
+				input.style.fontSize = 18 + 'px';
+				input.style.color = '#cad7de';
+				input.style.lineHeight = '.6em';
+				input.style.outline = 'none';
+				   
+				return input;
+		   },
+		   createStyledLabel : function(text,id) {
+		 	  var label = document.createElement('Label');
+		 	  label.innerHTML = text;
+		 	  label.for = id;
+		 	  label.style.marginLeft = 8 + 'px';
+		 	  label.style.verticalAlign = 'middle';
+		 	  label.style.textAlign = 'left';
+		 	  label.style.fontFamily = '\'Permanent Marker\', cursive';
+		 	  label.style.fontSize = 18 + 'px';
+		 	  label.style.color = 'rgba(238, 238, 238, 0.7)';
+		 			
+		 	  return label;
+		 	},
+		 	createStyledSelect : function(id, options) {
+		 			let select = document.createElement('select');
+		 			select.id = id;
+					select.style.marginLeft = 22 + 'px';
+					select.style.marginTop = 6 + 'px';
+					select.style.fontFamily = '\'Permanent Marker\', cursive';
+					select.style.background =  '#1c1818';
+					select.style.color = '#cad7de';
+		 			for (let i = 0; i < options.length; i++) {
+		 			   let option = document.createElement('option');
+		 			   option.value = options[i];
+		 			   option.text = options[i];
+		 			   option.style.padding = 6 + 'px';
+		 			   select.appendChild(option);
+		 			}
+		 			
+		 			return select;
+		 	},
+		 	createButton : function(id, text) {
+	 			 let button = document.createElement('input');
+	 			 button.type = 'submit';
+	 			 button.id = id;
+	 			 button.value = text;
+	 			 button.classList.add('wordSearchButton');
+	 			 button.style.margin = 12 + 'px';
+	 			 button.style.color = '#996633';
+	 			 button.style.textShadow = '0px 1px 0px rgba(255,255,255,.4)';
+	 			 button.style.background= '#232426';
+
+	 			 
+	 			 return button;
+	 		},
+	 		createFileChooser : function(id) {
+	 			 let file = document.createElement('input');
+	 			 file.type = 'file';
+	 			 file.multiple = false;
+	 			 file.id = id;
+	 			 file.classList.add('wordSearchButton');
+	 			 file.style.margin = 12 + 'px';
+	 			 file.style.color = '#996633';
+	 			 file.style.textShadow = '0px 1px 0px rgba(255,255,255,.4)';
+	 			 file.style.background= '#232426';
+
+	 			 
+	 			 return file;
+	 		},
+	 		createTable : function(id, rows, columnPattern) {
+	 			let table = document.createElement('table');
+	 			table.border = '0px';
+	 			table.id = id;
+	 		    let tableBody = document.createElement('tbody');
+	 		    for (let j = 0; j < rows; j++) {
+	 		       let row = document.createElement('tr');
+	 		       for (let i = 0; i < columnPattern[j]; i++) {
+		 		     let cell = document.createElement('td');
+	 		    	 if(columnPattern[j] === 1) {
+		 		    	  cell.colSpan  = 3;
+		 		      }  
+	 		          row.appendChild(cell);
+	 		       }
+	 		       
+	 		      
+	 		      tableBody.appendChild(row);
+	 		    }
+	 		    table.appendChild(tableBody);
+	 		    return table;
+	 		},
+	 		setupHandlers : function() {
+	 			console.log('Picture:  ' + document.querySelector('#picture'))
+	 			document.querySelector('#picture').addEventListener( 'change', (e) => this.pictureLoad() )
+	 			document.querySelector('#firstTable').querySelector('#Submit').addEventListener('click',(e) => {
+				    let valid = Parser.validateFirst();
+				    if(valid === '') {
+				    	firstSendParameters.topic = document.querySelector('#topic').value;
+						firstSendParameters.solution = document.querySelector('#solution').value;
+				    	console.log('topic:  ' + document.querySelector('#solution').value );
+						Controller([Sender.sendFirst( ),
+								this.removeForm() ]); 
+				    }
+				    else {
+				    	alert(valid);
+				    }
+			    });
+	 		},
+			pictureLoad : function() {
+	 			console.log('Pictureload fut  ' + document.querySelector('#picture').files );
+	 			let pictureList = document.querySelector('#picture').files;
+				if (pictureList.length > 0) {
+					let picture = pictureList[0];
+					let fileReader = new FileReader();
+
+					fileReader.onload = function(fileLoadedEvent) {
+						 firstSendParameters.picture = fileLoadedEvent.target.result;
+						 console.log('P I C T U R E   L O A D E D');
+					};
+					fileReader.readAsDataURL(picture);
+				}
+			},
+	 		removeForm : function() {
+	 			console.log('Removeform: ' + document.querySelector('#canvas_form'));
+	 			document.querySelector('#canvas_content').removeChild(document.querySelector('#canvas_form'));
+	 		}
+	 	};
+	 	let DrawTable =  {
+	 		that : null,
+			left : 0,
+			top : 0,
+			size : 0,
+			cells : [],
+			letters : [],
+			definitionText : [],
+			arrows : [],
+			submit : null,
+			activex : 0,
+			activey : 0,
+			activez : 0,
+			init : function() {
+				let canvas = document.getElementById('canvas_content');
+				let rect = canvas.getBoundingClientRect();
+				let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+				this.top = rect.top + scrollTop;
+				this.left = (stage.width() < window.innerWidth) ?stage.width() *0.1 : 10;
+				this.size =70;
+			},
+			pushTableImage : function(src) {
+	 			console.log(('Src:  ' + src));
+				dynamicImagesIds.push(src);
+				dynamicImageSrcs.push(src);
+				Parameters.pictureSrc = src;
+			},
+			loadImages : function(src) {
+				imagesObj = new Object();
+				let imgCounter = 0;
+				let staticImageSrcs = ['/images/definition.png', '/images/definitionHalf.png', '/images/down0.png',
+								'/images/down1.png', '/images/down2.png', '/images/forward0.png',  '/images/forward1.png',
+					            '/images/forward2.png', '/images/leftdown0.png',  '/images/leftdown1.png',
+							     '/images/leftdown2.png', '/images/rightdown0.png', '/images/rightdown1.png',
+								'/images/rightdown2.png', '/images/upforward0.png', '/images/upforward1.png',
+					            '/images/upforward2.png', '/images/downforward0.png', '/images/downforward1.png',
+								'/images/downforward2.png',	'/images/simplecell.png', '/images/solution.png'];
+				let staticImagesId = [ 'definition', 'definitionHalf', 'DOWN0', 'DOWN1', 'DOWN2', 'FORWARD0', 'FORWARD1',
+								 'FORWARD2', 'LEFTDOWN0', 'LEFTDOWN1', 'LEFTDOWN2', 'RIGHTDOWN0', 'RIGHTDOWN1',
+					             'RIGHTDOWN2', 'UPFORWARD0', 'UPFORWARD1', 'UPFORWARD2',  'DOWNFORWARD0',
+								 'DOWNFORWARD1', 'DOWNFORWARD2', 'simplecell', 'solution'];
+
+				let imagesId = dynamicImagesIds.concat(staticImagesId);
+				let imageSrcs = dynamicImageSrcs.concat(staticImageSrcs);
+
+				let images = [];
+				for (let j = 0; j < imageSrcs.length; j++) {
+					images[j] = document.createElement('img');
+				}
+
+				for (let i = 0; i < images.length; i++) {
+					images[i].setAttribute('class', 'hidden');
+					images[i].setAttribute('id', imagesId[i]);
+					images[i].onload = function () {
+						console.log('Image' + i + ' downloaded');
+						imagesObj[imagesId[i]] = images[i];
+						document.getElementById('canvas_content').appendChild(images[i]);
+						if (++imgCounter == imageSrcs.length) {
+							DrawTable.drawTable();
+							DrawTable.drawPicture(src);
+
+
+						}
+					};
+					images[i].src = imageSrcs[i];
+				}
+			},
+			drawSubmit : function() {
+				this.submit = new Konva.Text({
+					x: this.left + this.size + this.size*6,
+					y:  this.top ,
+					text: 'Submit',
+					fontSize: 20 ,
+					fontFamily: 'Calibri' ,
+					fill: 'black'
+				});
+				layer.add(this.submit);
+				layer.draw();
+			},
+			drawTable : function() {
+	 			this.that = this;
+	 			this.drawSubmit();
+				console.log('Drawtable fut' + Parameters.table.letters[0].length );
+				for(let y=0; y<Parameters.table.letters.length; y++) {
+					this.letters[y] = [];
+					this.cells[y] = [];
+					this.definitionText[y] = [];
+					this.arrows[y]= [];
+					for(let x=0; x<15; x++) {
+						this.cells[y][x] = [];
+						this.letters[y][x] = [];
+						this.definitionText[y][x] = [];
+						this.arrows[y][x] = [];
+						if(Parameters.definitions.definition[y][x] !==undefined) {
+							let length = Parameters.definitions.definition[y][x].length;
+							for(let z=0;z<length;z++) {
+								this.drawDefinition(y,x,z, length, this );
+							}
+						}
+						else {
+							this.drawCell(y,x, this);
+						}
+					}
+				}
+
+				this.setupHandlers();
+			},
+			drawPicture : function(src) {
+				let picture  = new Konva.Image({
+					x:  this.left,
+					y:  this.top ,
+					image : imagesObj[src],
+					width : this.size *5,
+					height: this.size *4
+				});
+				layer.add(picture);
+				layer.draw();
+			},
+			drawDefinition : function(y,x,z, length, that) {
+				if(that.cells[y][x][z] !== undefined) {
+					layer.clear(that.left + x*that.size, that.top + 20 + y*that.size + (that.size/2) *z,
+								that.size, that.size/length);
+					that.cells[y][x][z].remove();
+					that.cells[y][x][z] = null;
+				}
+				let cellDraw  = new Konva.Image({
+					x:  that.left + x*that.size,
+					y:  that.top + 20 + y*that.size + (that.size/2) *z ,
+					image : (length===1) ? imagesObj['definition'] : imagesObj['definitionHalf'],
+					width : that.size,
+					height: that.size/length
+				});
+				cellDraw.type = 'definition';
+				cellDraw.posy = y;
+				cellDraw.posx = x;
+				cellDraw.posz = z;
+				that.cells[y][x][z] = cellDraw;
+				layer.add(that.cells[y][x][z]);
+				layer.draw();
+
+				if(that.definitionText[y][x][z] !== undefined) {
+					that.definitionText[y][x][z].remove();
+					that.definitionText[y][x][z] = null;
+				}
+				let definitionText = new Konva.Text({
+					x: that.left + x*that.size + that.size*0.06,
+					y:  that.top + 20 + y*that.size + (that.size/2) *z + that.size*0.06,
+					text: Parameters.definitions.definition[y][x][z].clue,
+					align : 'center',
+					lineHeight : 1.2,
+					fontSize: 15 -  3 * (length -1) ,
+					fontFamily: 'Calibri' ,
+					fill: 'black'
+				});
+				that.definitionText[y][x][z] = definitionText;
+				layer.add(that.definitionText[y][x][z]);
+				layer.draw();
+
+			},
+			drawCell : function(y,x, that) {
+				if(that.cells[y][x][0] !== undefined) {
+					layer.clear(that.left + x*that.size, that.top + 20 + y*that.size + (that.size/2) *z,
+							that.size, that.size/length);
+					that.cells[y][x][0].remove();
+					that.cells[y][x][0] = null;
+				}
+				let cellDraw  = new Konva.Image({
+					x:  that.left + x*that.size,
+					y:  that.top + 20 + y*that.size ,
+					image : (Parameters.table.solutions[y][x] === true) ? imagesObj['solution'] : imagesObj['simplecell'],
+					width : that.size,
+					height: that.size
+				});
+				that.cells[y][x][0] = cellDraw;
+				layer.add(that.cells[y][x][0]);
+				layer.draw();
+
+				if(Parameters.table.arrows[y][x].length > 0) {
+					for (let z = 0; z < Parameters.table.arrows[y][x].length; z++) {
+
+						if (that.arrows[y][x][z] !== undefined) {
+							that.arrows[y][x][z].remove();
+							that.arrows[y][x][z] = null;
+						}
+						let arrowPic = new Konva.Image({
+							x: that.left + x * that.size,
+							y: that.top + 20 + y * that.size,
+							image: imagesObj[Parameters.table.arrows[y][x][z].arrow + Parameters.table.arrows[y][x][z].index],
+							width: that.size,
+							height: that.size
+						});
+						that.arrows[y][x][z] = arrowPic;
+						layer.add(that.arrows[y][x][z]);
+					}
+					layer.draw();
+				}
+				if(Parameters.table.letters[y][x] !== null) {
+					if(that.letters[y][x] !== null) {
+						that.letters[y][x] = null;
+					}
+					let letterPic  = new Konva.Text({
+						x: that.left + x*that.size + that.size*0.3,
+						y:  that.top + 20 + y*that.size + that.size * 0.3,
+						text: Parameters.table.letters[y][x],
+						fontSize: 34 ,
+						fontFamily: 'Calibri' ,
+						fill: 'black'
+					});
+					that.letters[y][x] = letterPic;
+					layer.add(that.letters[y][x]);
+					layer.draw();
+				}
+
+			},
+			setupHandlers : function() {
+				for(let y=0; y<15; y++) {
+					for(let x=0; x<15; x++) {
+						for(let z=0; z<this.cells[y][x].length; z++) {
+							if(this.cells[y][x][z].type === 'definition') {
+								this.cells[y][x][z].on( 'click' , (e) => Controller([this.disableHandlers(),
+										this.writeDefinition(e)] ));
+							}
+						}
+
+					}
+				}
+				this.submit.on('click' , Sender.saveFinalTable);
+			},
+			disableHandlers : function() {
+				for(let y=0; y<15; y++) {
+					for(let x=0; x<15; x++) {
+						for(let z=0; z<this.cells[y][x].length; z++) {
+							if(this.cells[y][x][z].type === 'definition') {
+								this.cells[y][x][z].off( 'click'  )
+							}
+						}
+
+					}
+				}
+			},
+			writeDefinition : function (e) {
+	 			this.activey = e.target.posy;
+				this.activex = e.target.posx;
+				this.activez = e.target.posz;
+				console.log('X:  ' + this.activex)
+				let input = document.createElement('input');
+				input.setAttribute('type', 'text');
+				input.id = 'defedit';
+				input.maxLength = 20;
+				input.style.width = 220  + 'px';
+				input.style.height = 40  + 'px';
+				input.style.paddingLeft = 6 + 'px';
+				input.style.background =  '#d4d0c5';
+				input.style.border = 'solid 4px';
+				input.style.fontSize = 14 + 'px';
+				input.style.color = 'black';
+				input.style.lineHeight = '.36em';
+				input.style.outline = 'none';
+				input.style.position = 'absolute';
+				input.style.top = e.target.y() + this.top + 'px';
+				input.style.left = e.target.x() + 'px';
+
+				document.querySelector('#canvas_content').appendChild(input);
+				window.addEventListener(
+						'keydown', this.readLetter, false	);
+			},
+			readLetter : function(e) {
+				let c = e.key;
+				console.log('Key:  ' + c);
+				if(c==='Enter') {
+					let newDef = Util.justify(document.querySelector('#defedit').value, 12);
+
+					Parameters.definitions.definition[DrawTable.activey][DrawTable.activex][DrawTable.activez].clue = newDef;
+					let length = Parameters.definitions.definition[DrawTable.activey][DrawTable.activex].length;
+					DrawTable.drawDefinition(DrawTable.activey, DrawTable.activex, DrawTable.activez, length, DrawTable.that);
+					document.querySelector('#canvas_content').removeChild(document.querySelector('#defedit'));
+					DrawTable.setupHandlers();
+					console.log('NewDef:  ' + newDef);
+				}
+				else if(c==='Escape') {
+					document.querySelector('#canvas_content').removeChild(document.querySelector('#defedit'));
+					DrawTable.setupHandlers();
+				}
+			}
+	 	};
+
+	 	let Util = {
+			 justify : function(str, len) {
+
+				let re = RegExp('(?:\\s|^)(.{1,' + len + '})(?=\\s|$)', 'g');
+				let res = [];
+				let finalResult = [];
+
+				while ((m = re.exec(str)) !== null) {
+					res.push(m[1]);
+				}
+
+				for (let i = 0; i < res.length - 1; i++){
+					if(res[i].indexOf(' ') !== -1){
+						while(res[i].length < len){
+							for(var j=0; j < res[i].length-1; j++){
+								if(res[i][j] === ' '){
+									res[i] = res[i].substring(0, j) + ' ' + res[i].substring(j);
+									if(res[i].length === len) break;
+									while(res[i][j] === ' ') j++;
+								}
+							}
+						}
+					}
+					finalResult.push(res[i]);
+				}
+
+				finalResult.push(res[res.length - 1]);
+
+				return finalResult.join('\n');
+
+			}
+		};
+	 	let Parser =  {
+		 		validateFirst : function() {
+		 			let result = '';
+		 			
+		 			return result;
+		 		},
+		 		parseFirstResponse(response) {
+		 			let responseObject = JSON.parse(response);
+		 			let table = responseObject.table;
+		 			let definitions = responseObject.definitionTable;
+
+		 			let src = responseObject.pictureSrc;
+		 			DrawTable.pushTableImage(src);
+
+					for(let y=0; y<table.length; y++) {
+						Parameters.table.arrows[y] = [];
+						for(let x=0; x<table[0].length; x++) {
+							Parameters.table.arrows[y][x] = [];
+						}
+					}
+		 			
+		 			for(let y=0; y<table.length; y++) {
+		 				Parameters.table.letters[y] = [];
+		 				Parameters.table.solutions[y] = [];
+		 				Parameters.definitions.definition[y] = [];
+		 				for(let x=0; x<table[0].length; x++) {
+		 					if(definitions[y][x] !== null) {
+	 							console.log('definition found ' + definitions[y][x].definitions.length );
+		 						Parameters.definitions.definition[y][x] = [];
+
+		 						let  length = definitions[y][x].definitions.length;
+								for(let z=0; z<length; z++) {
+									let index = 2;
+									if(length === 2) {
+										index = z;
+									}
+
+		 							Parameters.definitions.definition[y][x][z] = new Object;
+		 							Parameters.definitions.definition[y][x][z].word = definitions[y][x].definitions[z].word;
+		 							Parameters.definitions.definition[y][x][z].direction = definitions[y][x].definitions[z].direction;
+		 							Parameters.definitions.definition[y][x][z].definition = definitions[y][x].definitions[z].definition;
+									Parameters.definitions.definition[y][x][z].clue = '';
+
+									if(definitions[y][x].definitions[z].direction === 'FORWARD') {
+										Parameters.table.arrows[y][x+1].push({ 'arrow' : 'FORWARD', 'index' : index  });
+									}
+									else if(definitions[y][x].definitions[z].direction === 'UPFORWARD') {
+										Parameters.table.arrows[y-1][x].push({ 'arrow' : 'UPFORWARD', 'index' : index  });
+									}
+									else if(definitions[y][x].definitions[z].direction === 'DOWNFORWARD') {
+										Parameters.table.arrows[y+1][x].push({ 'arrow' : 'DOWNFORWARD', 'index' : index  });
+									}
+									else if(definitions[y][x].definitions[z].direction === 'RIGHTDOWN') {
+										Parameters.table.arrows[y][x+1].push({ 'arrow' : 'RIGHTDOWN', 'index' : index  });
+									}
+									else if(definitions[y][x].definitions[z].direction === 'LEFTDOWN') {
+										Parameters.table.arrows[y][x-1].push({ 'arrow' : 'LEFTDOWN', 'index' : index  });
+									}
+									else  {
+										Parameters.table.arrows[y+1][x].push( { 'arrow' : 'DOWN', 'index' : index  } );
+									}
+		 						}
+		 					}
+		 					if(table[y][x] !== null) {
+		 						Parameters.table.letters[y][x] = table[y][x].letter;
+		 						Parameters.table.solutions[y][x] = table[y][x].solution;
+		 					}
+		 				}
+		 			}
+		 			console.log('Parsed data_: ' + JSON.stringify(Parameters));
+		 			
+		 		}
+	 	};
+	 	let Sender =  {
+	 			sendFirst : function() {
+		 			
+	 				let xhttp = new XMLHttpRequest();
+			    	xhttp.onreadystatechange = function() {
+			        	 if (this.readyState == 4 && this.status == 200) {
+			          	   Controller([Parser.parseFirstResponse(this.responseText),
+							   		   DrawTable.init(), DrawTable.loadImages(JSON.parse(this.responseText).pictureSrc) ]);
+
+
+			         	  }
+			    	};
+					xhttp.open('POST', 'http://localhost/scandi/', true);
+			    	xhttp.send(JSON.stringify(firstSendParameters));
+		 		},
+			saveFinalTable : function() {
+				let xhttp = new XMLHttpRequest();
+				xhttp.onreadystatechange = function() {
+					if (this.readyState == 4 && this.status == 200) {
+						console.log('Response:  ' + this.responseText);
+						if(this.responseText === 'everything ok') {
+							stage.clear();
+							stage.removeChildren();
+							stage.remove();
+							stage = null;
+							Parameters = null;
+							firstSendParameters = null;
+						}
+					}
+				};
+				xhttp.open('POST', 'http://localhost/scandisave/', true);
+				xhttp.send(JSON.stringify(Parameters));
+			}
+	 	};
+	 	CreateFirstRequest.init();
+	 }();
+	
+	</script>
+</body>
+</html>
+
+

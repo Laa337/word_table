@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        #hidden { visibility: hidden; }
+        .hidden { visibility: hidden; }
+        input, select, textarea {
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        input {
+            width: calc(100% - 10px);
+            padding: 5px;
+            background-color: '#faf5c8';
+        }
+    </style>
+</head>
+<body>
+<h3>Button Teszt</h3>
+<a href="task" >Task</a><br/><br/>
+<button onclick="AnotherButton()" >WordTableCreate</button>
+<button onclick="WordPlay()" >WordTablePly</button>
+<button onclick="Scandi()" >ScandiCreate</button>
+<button onclick="ScandiPlay()" >ScandiPlay</button>
+<div id="canvas_content" style="max-height: 2400px;max-width:1200px;
+					margin-right: auto; margin-left: auto; overflow: scroll;">
+    <canvas id="canvas" width="1150" height="1400">
+
+    </canvas>
+</div>
+<div>
+    <script type="text/javascript">
+        function AnotherButton() {
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById('canvas_content').innerHTML = this.responseText;
+
+                }
+            };
+            xhttp.open("POST", "http://localhost/wordinit/", true);
+            xhttp.setRequestHeader("Content-type", "text/html");
+            xhttp.send();
+        }
+        function Scandi() {
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+
+                    document.getElementById('canvas_content').innerHTML = this.responseText;
+
+                }
+            };
+            xhttp.open("GET", "http://localhost/scandiinit/", true);
+            xhttp.setRequestHeader("Content-type", "text/html");
+            xhttp.send();
+        }
+        function WordPlay() {
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+
+                    document.getElementById('canvas_content').innerHTML = this.responseText;
+
+                }
+            };
+            xhttp.open("GET", "http://localhost/wordplay/", true);
+            xhttp.setRequestHeader("Content-type", "text/html");
+            xhttp.send();
+        }
+        function ScandiPlay() {
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById('canvas_content').innerHTML = this.responseText;
+
+                }
+            };
+            xhttp.open("GET", "http://localhost/scandiplay/", true);
+            xhttp.setRequestHeader("Content-type", "text/html");
+            xhttp.send();
+        }
+    </script>
+    <br /><br /><br/>
+</div>
+
+<script src="https://unpkg.com/konva@4.0.0/konva.min.js"></script>
+</body>
+</html>
