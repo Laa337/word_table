@@ -160,11 +160,11 @@
       			        let submitButton2 = ReadParams.createButton( text+2, text);
       			        let cancelButton2 = ReadParams.createButton('cancel2','Cancel');
 
-      			   let firstTable = ReadParams.createTable('firstTable',4,[1,3,2,2]);
-      			   let nameLabel = ReadParams.createStyledLabel('Name','name');
-      			   let name = ReadParams.createStyledInput('name','text', 300);
-      			   let topicLabel = ReadParams.createStyledLabel('Topic','topic');
-      			   let topic = ReadParams.createStyledSelect('topic',['Állatok','Névmások'],['allat','nevmas']);
+      			        let firstTable = ReadParams.createTable('firstTable',4,[1,3,2,2]);
+      			        let nameLabel = ReadParams.createStyledLabel('Name','name');
+      			        let name = ReadParams.createStyledInput('name','text', 300);
+      			        let topicLabel = ReadParams.createStyledLabel('Topic','topic');
+      			        let topic = ReadParams.createStyledSelect('topic',['Állatok','Névmások'],['allat','nevmas']);
       			   let rowsLabel = ReadParams.createStyledLabel('Rows','rows');
       			   let rows = ReadParams.createStyledInput('rows','number', 52, 4,20);
       			   let columnLabel = ReadParams.createStyledLabel('Columns','columns');

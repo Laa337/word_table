@@ -215,16 +215,16 @@ public class WordFinderController extends AbstractBehavior<WordFinderController.
     }
 
     private void askTableDecomposer(String[] table, ActorRef<Object> sender) {
-                 Behavior<TableDecomposerWorker.StartCommand> supervised =
+                 Behavior<TableDecomposerWorker.Command> supervised =
                      Behaviors.supervise(TableDecomposerWorker.create()).onFailure(SupervisorStrategy.stop());
-                ActorRef<TableDecomposerWorker.StartCommand> decomposer =
+                ActorRef<TableDecomposerWorker.Command> decomposer =
                      getContext().spawn(supervised, "creator" + new Random().nextInt(100000) );
                  ErrorClass error = new ErrorClass("Table decomposer failed");
                  getContext().watchWith(decomposer, error);
                  getContext().ask(WordTable.Decompose.class,
                          decomposer,
                          Duration.ofSeconds(1),
-                         me -> new TableDecomposerWorker.Decompose(table, me, error),
+                         me -> new TableDecomposerWorker.Decompose(table, me),
                          (response, failure) -> {
                              if (response != null) {
                                  WordTable.DecomposeClass result = (WordTable.DecomposeClass)response;

@@ -22,6 +22,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 import repositories.actor.scandi.ScandiRepository;
 import repositories.actor.wordtable.TableRepository;
+import views.html.index;
 
 import javax.inject.Inject;
 import javax.xml.bind.DatatypeConverter;
@@ -33,7 +34,6 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.CompletionStage;
@@ -65,9 +65,21 @@ public class HomeController extends Controller {
         this.hec = hec;
     }
 
+    public  Result login(Http.Request request) {
+        String name = new JSONObject(request.body().asText()).getString("name");
+        System.out.println("Login: " + name);
 
-    public Result index() {
-        return ok("");
+        return ok(name).withNewSession().addingToSession(request, "user", name);
+    }
+
+
+    // public Result index() {return ok("");}
+
+
+    public Result index(Http.Request request) {
+        String user =  request.session().get("user").orElse("Anonymus");
+        System.out.println("Index: " + user);
+        return ok(index.render(user));
     }
 
     public Result wordTableInit() throws IOException {

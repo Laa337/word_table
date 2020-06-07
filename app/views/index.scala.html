@@ -1,0 +1,98 @@
+@(user : String)
+
+@main("Welcome to Play") {
+    <h1 id="welcome">Welcome dear @user </h1>
+    <br />
+
+    <button onclick="playRooter('wordinit')" >WordTableCreate</button>
+    <button onclick="playRooter('wordplay')" >WordTablePly</button>
+    <button onclick="playRooter('scandiinit')" >ScandiCreate</button>
+    <button onclick="playRooter('scandiplay')" >ScandiPlay</button>
+    <br/><br/>
+
+    <button id="login">Login as</button>
+    <div id="login_form"  title="LOGIN AS">
+        <form>
+            <fieldset>
+                <label for="name">Name: </label>
+                <input type="text" name="name" id="name" class="text ui-widget-content ui-corner-all"/>
+            </fieldset>
+        </form>
+    </div>
+
+
+    <div id="canvas_content" style="max-height: 2400px;max-width:1200px;
+        margin-right: auto; margin-left: auto; overflow: scroll;">
+        <canvas id="canvas" width="1150" height="1400">
+
+        </canvas>
+    </div>
+
+    <style>
+            #hidden { visibility: hidden; }
+            .hidden { visibility: hidden; }
+
+            label, input { display:block; }
+            input.text { margin-bottom:12px; width:95%; padding: .4em; }
+            fieldset { padding:0; border:0; margin-top:25px; }
+            input, select, textarea {
+                margin-bottom: 10px;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+            }
+            input {
+                width: calc(100% - 10px);
+                padding: 5px;
+                background-color: '#faf5c8';
+            }
+    </style>
+    <script type="text/javascript">
+            function playRooter(where) {
+
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        document.getElementById('canvas_content').innerHTML = this.responseText;
+
+                    }
+                };
+                xhttp.open("POST", "http://localhost/"+ where + "/", true);
+                xhttp.setRequestHeader("Content-type", "text/html");
+                xhttp.send();
+            }
+            $( function() {
+                let dialog = $('#login_form').dialog({
+                    autoOpen : false,
+                    height: 180,
+                    width: 350,
+                    modal: true,
+                    buttons : {
+                        'Login' : login,
+                        Cancel : function() {
+                            dialog.dialog('close');
+                        }
+                    }
+                });
+                function login() {
+                    let name = {'name' : $('#name').val()}
+                    console.log('login  ' + name.name);
+                    let xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                            console.log("Response: " + this.responseText)
+                            document.querySelector('#welcome').innerHTML = "Welcome dear " + this.responseText;
+                        }
+                    };
+                    xhttp.open("POST", "http://localhost/login/", true);
+                    xhttp.send(JSON.stringify(name));
+                    dialog.dialog('close');
+                }
+                $('#login').button().on('click',  function(){
+                   dialog.dialog('open');
+                });
+                console.log('Jquery fut');
+
+            });
+    </script>
+
+}
