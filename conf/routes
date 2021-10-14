@@ -1,0 +1,33 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# An example controller showing a sample home page
+
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+
+GET      /                          controllers.HomeController.index(request : Request)
+POST     /login/                     controllers.HomeController.login(request : Request)
+
+GET      /scandiinit/                controllers.HomeController.scandiInit
+POST     /scandi/                    controllers.HomeController.scandiCreateTable(request : Request)
+POST     /scandisave/                controllers.HomeController.scandiSaveTable(request : Request)
+
+GET      /scandiplay/                controllers.HomeController.scandiPlay
+GET      /scandiselecttable/         controllers.HomeController.scandiSelectTable
+POST     /scandigetselectedtable/    controllers.HomeController.scandiGetSelectedTable(request : Request)
+
+GET      /scandiproba/              controllers.HomeController.scandiProba
+
+GET     /wordinit/                  controllers.HomeController.wordTableInit
+POST     /wordtablehuman/            controllers.HomeController.wordTableHuman(request : Request)
+POST     /wordtablemachine/          controllers.HomeController.wordTableMachine(request : Request)
+POST     /wordtablesave/             controllers.HomeController.wordTableSave(request : Request)
+
+GET      /wordplay/                  controllers.HomeController.wordPlay
+GET      /wordselecttable/           controllers.HomeController.wordSelectTables
+POST     /wordgetselectedtable/      controllers.HomeController.wordGetGelectedGable(request : Request)
+
+GET      /images/:src                controllers.HomeController.images(src: String)
